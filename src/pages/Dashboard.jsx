@@ -28,7 +28,12 @@ const Dashboard = () => {
   };
 
   const handleSetPin = () => {
-    const p = prompt("Enter new 4-digit scoring PIN:", appPin);
+    const old = prompt("Enter Current PIN to verify:");
+    if (old !== appPin) {
+      alert("Incorrect Current PIN!");
+      return;
+    }
+    const p = prompt("Enter NEW 4-digit scoring PIN:");
     if (p && p.length === 4) {
       setAppPin(p);
       alert("PIN updated successfully!");
@@ -53,7 +58,7 @@ const Dashboard = () => {
                 onClick={handleSetPin}
                 style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
               >
-                Set Scoring PIN (Current: {appPin})
+                Change Scoring PIN
               </button>
             )}
           </div>
