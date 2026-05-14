@@ -17,22 +17,49 @@ export const CricketProvider = ({ children }) => {
   // Load from Cloud on Start
   useEffect(() => {
     const loadData = async () => {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-        // Tournaments: use maybeSingle or handle empty list
-        const { data: tData } = await supabase.from('tournaments').select('data').order('updated_at', { ascending: false });
-        if (tData) setTournaments(tData.map(item => item.data));
+        // Fetch Tournaments - try 'data' column first, if fails, it's fine
+        const { data: tData, error: tErr } = await supabase
+          .from('tournaments')
+          .select('*') // Select all to be safe
+          .order('updated_at', { ascending: false });
+        
+        if (!tErr && tData) {
+          // If we used the 'data' column schema
+          if (tData.length > 0 && tData[0].data) {
+            setTournaments(tData.map(item => item.data));
+          } else {
+            // If we used the 'id, name, teams' column schema
+            setTournaments(tData);
+          }
+        }
 
-        // Active Match: use maybeSingle to avoid 406 error if empty
-        const { data: mData } = await supabase.from('active_match').select('data').eq('id', 'current').maybeSingle();
-        if (mData && mData.data) setActiveMatch(mData.data);
+        // Fetch Active Match
+        const { data: mData, error: mErr } = await supabase
+          .from('active_match')
+          .select('*')
+          .eq('id', 'current')
+          .maybeSingle();
+        
+        if (!mErr && mData) {
+          setActiveMatch(mData.data || mData); // Handle both schemas
+        }
 
-        // Settings: use maybeSingle
-        const { data: sData } = await supabase.from('app_settings').select('scoring_pin').eq('id', 'global').maybeSingle();
-        if (sData) setAppPinState(sData.scoring_pin);
+        // Fetch Settings
+        const { data: sData, error: sErr } = await supabase
+          .from('app_settings')
+          .select('scoring_pin')
+          .eq('id', 'global')
+          .maybeSingle();
+        
+        if (!sErr && sData) {
+          setAppPinState(sData.scoring_pin);
+        }
 
         const savedAuth = localStorage.getItem('isAuthorized');
         if (savedAuth === 'true') setIsAuthorized(true);
+
       } catch (err) {
         console.error('Initial load error:', err);
       } finally {
