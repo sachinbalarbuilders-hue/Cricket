@@ -4,7 +4,7 @@ import { Trophy, Plus, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const { tournaments, addTournament, activeMatch, isLoading, isSyncing } = useCricket();
+  const { tournaments, addTournament, activeMatch, isLoading, isSyncing, appPin, setAppPin } = useCricket();
   const [newTName, setNewTName] = useState('');
   const navigate = useNavigate();
 
