@@ -38,6 +38,7 @@ const TournamentManager = () => {
   const [team2Id, setTeam2Id] = useState('');
   const [team1PlayingIds, setTeam1PlayingIds] = useState([]);
   const [team2PlayingIds, setTeam2PlayingIds] = useState([]);
+  const [isCompulsoryChase, setIsCompulsoryChase] = useState(false);
   const [overs, setOvers] = useState('5');
   const [activeTab, setActiveTab] = useState('points'); 
   const [selectedMatch, setSelectedMatch] = useState(null);
@@ -127,7 +128,7 @@ const TournamentManager = () => {
         return;
       }
       
-      startMatch(tournament.id, team1Id, team2Id, overs, team1PlayingIds, team2PlayingIds);
+      startMatch(tournament.id, team1Id, team2Id, overs, team1PlayingIds, team2PlayingIds, isCompulsoryChase);
       navigate('/match');
     } else {
       alert("Please select two different teams and set overs.");
@@ -612,6 +613,19 @@ const TournamentManager = () => {
               value={overs} 
               onChange={(e) => setOvers(e.target.value)}
             />
+          </div>
+
+          <div className="input-group" style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input 
+              type="checkbox" 
+              id="compulsoryChase"
+              checked={isCompulsoryChase} 
+              onChange={(e) => setIsCompulsoryChase(e.target.checked)}
+              style={{ width: '18px', height: '18px', accentColor: 'var(--accent-primary)' }}
+            />
+            <label htmlFor="compulsoryChase" style={{ fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
+              Compulsory Chase Rule
+            </label>
           </div>
 
           <button 

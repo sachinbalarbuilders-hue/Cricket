@@ -428,7 +428,14 @@ const LiveScorer = () => {
               Saving...
             </>
           ) : (
-            <>Innings {activeMatch.currentInnings}</>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+              <span>Innings {activeMatch.currentInnings}</span>
+              {activeMatch.isCompulsoryChase && (
+                <span style={{ fontSize: '0.65rem', color: '#ffd700', border: '1px solid #ffd700', padding: '2px 4px', borderRadius: '2px' }}>
+                  COMPULSORY CHASE
+                </span>
+              )}
+            </div>
           )}
         </div>
         
@@ -446,7 +453,7 @@ const LiveScorer = () => {
           Overs: {oversBowled}.{ballsInOver} <span style={{ fontSize: '0.875rem', fontWeight: 400 }}>/ {activeMatch.overs}</span>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '16px', marginBottom: activeMatch.currentInnings === 2 ? '12px' : 0 }}>
           <div>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>CRR</p>
             <p style={{ fontWeight: 600 }}>{currentRunRate}</p>
@@ -464,6 +471,17 @@ const LiveScorer = () => {
             </>
           )}
         </div>
+
+        {activeMatch.currentInnings === 2 && (
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px', fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+            Need {activeMatch.target - battingTeam.runs} runs from {(activeMatch.overs * 6) - battingTeam.balls} balls
+            {activeMatch.isCompulsoryChase && (
+              <div style={{ fontSize: '0.7rem', color: '#ffd700', marginTop: '4px', fontWeight: 500 }}>
+                ★ Compulsory Chase Rule is ON
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>

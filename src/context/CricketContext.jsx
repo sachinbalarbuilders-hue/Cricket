@@ -178,7 +178,7 @@ export const CricketProvider = ({ children }) => {
     await syncTournaments([updated.find(t => t.id === tournamentId)]);
   };
 
-  const startMatch = async (tournamentId, team1Id, team2Id, overs, team1PlayingIds, team2PlayingIds) => {
+  const startMatch = async (tournamentId, team1Id, team2Id, overs, team1PlayingIds, team2PlayingIds, isCompulsoryChase = false) => {
     const t = tournaments.find(t => t.id === tournamentId);
     const cloneTeam = (team, playingIds) => {
       const playingRoster = team.players.filter(p => playingIds.includes(p.id));
@@ -195,6 +195,7 @@ export const CricketProvider = ({ children }) => {
 
     const match = {
       id: Date.now().toString(), tournamentId, overs: parseInt(overs, 10), team1, team2, currentInnings: 1,
+      isCompulsoryChase,
       battingTeamId: team1Id, bowlingTeamId: team2Id, partnership: { runs: 0, balls: 0 }, isComplete: false,
       target: null, strikerId: null, nonStrikerId: null, currentBowlerId: null,
       promptForBatsmen: true, promptForBowler: true, promptForNextBatsman: false, isInningsBreak: false
