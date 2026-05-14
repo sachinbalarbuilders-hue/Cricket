@@ -19,13 +19,16 @@ export const CricketProvider = ({ children }) => {
     const loadData = async () => {
       try {
         setIsLoading(true);
+        // Tournaments: use maybeSingle or handle empty list
         const { data: tData } = await supabase.from('tournaments').select('data').order('updated_at', { ascending: false });
         if (tData) setTournaments(tData.map(item => item.data));
 
-        const { data: mData } = await supabase.from('active_match').select('data').eq('id', 'current').single();
+        // Active Match: use maybeSingle to avoid 406 error if empty
+        const { data: mData } = await supabase.from('active_match').select('data').eq('id', 'current').maybeSingle();
         if (mData && mData.data) setActiveMatch(mData.data);
 
-        const { data: sData } = await supabase.from('app_settings').select('scoring_pin').eq('id', 'global').single();
+        // Settings: use maybeSingle
+        const { data: sData } = await supabase.from('app_settings').select('scoring_pin').eq('id', 'global').maybeSingle();
         if (sData) setAppPinState(sData.scoring_pin);
 
         const savedAuth = localStorage.getItem('isAuthorized');
