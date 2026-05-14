@@ -4,8 +4,10 @@ import { Trophy, Plus, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const { tournaments, addTournament, activeMatch, isLoading, isSyncing, appPin, setAppPin } = useCricket();
+  const { tournaments, addTournament, activeMatch, isLoading, isSyncing, appPin, setAppPin, isAuthorized, authorize, deauthorize } = useCricket();
   const [newTName, setNewTName] = useState('');
+  const [pinInput, setPinInput] = useState('');
+  const [showAuth, setShowAuth] = useState(false);
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -28,17 +30,22 @@ const Dashboard = () => {
   };
 
   const handleSetPin = () => {
-    const old = prompt("Enter Current PIN to verify:");
-    if (old !== appPin) {
-      alert("Incorrect Current PIN!");
-      return;
-    }
     const p = prompt("Enter NEW 4-digit scoring PIN:");
     if (p && p.length === 4) {
       setAppPin(p);
       alert("PIN updated successfully!");
     } else if (p) {
       alert("PIN must be exactly 4 digits.");
+    }
+  };
+
+  const handleAuth = (e) => {
+    e.preventDefault();
+    if (authorize(pinInput)) {
+      setShowAuth(false);
+      setPinInput('');
+    } else {
+      alert("Invalid PIN!");
     }
   };
 
@@ -53,17 +60,49 @@ const Dashboard = () => {
                 <div className="live-dot" style={{ width: '6px', height: '6px' }}></div>
                 Cloud Syncing...
               </div>
+            ) : isAuthorized ? (
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button 
+                  onClick={handleSetPin}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                >
+                  Change Scoring PIN
+                </button>
+                <button 
+                  onClick={deauthorize}
+                  style={{ background: 'none', border: 'none', color: 'var(--accent-danger)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                >
+                  Admin Logout
+                </button>
+              </div>
             ) : (
               <button 
-                onClick={handleSetPin}
-                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                onClick={() => setShowAuth(!showAuth)}
+                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
               >
-                Change Scoring PIN
+                Admin Login
               </button>
             )}
           </div>
         </div>
       </div>
+      
+      {showAuth && !isAuthorized && (
+        <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px', border: '1px solid var(--accent-primary)' }}>
+          <h3 style={{ marginBottom: '12px', fontSize: '1rem' }}>Scorer Authentication</h3>
+          <form onSubmit={handleAuth} style={{ display: 'flex', gap: '8px' }}>
+            <input 
+              type="password" 
+              placeholder="Enter PIN" 
+              maxLength={4}
+              value={pinInput}
+              onChange={e => setPinInput(e.target.value)}
+              style={{ flex: 1, padding: '10px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', textAlign: 'center', letterSpacing: '4px' }}
+            />
+            <button type="submit" className="btn btn-primary" style={{ padding: '0 20px' }}>Login</button>
+          </form>
+        </div>
+      )}
       
       {activeMatch && (
         <div 
@@ -81,21 +120,23 @@ const Dashboard = () => {
         </div>
       )}
 
-      <form onSubmit={handleCreate} className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
-        <h3 style={{ marginBottom: '16px' }}>Create New Tournament</h3>
-        <div className="input-group">
-          <input 
-            type="text" 
-            className="input-field" 
-            placeholder="Tournament Name (e.g. Summer Cup)" 
-            value={newTName}
-            onChange={(e) => setNewTName(e.target.value)}
-          />
-        </div>
-        <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-          <Plus size={20} /> Create Tournament
-        </button>
-      </form>
+      {isAuthorized && (
+        <form onSubmit={handleCreate} className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
+          <h3 style={{ marginBottom: '16px' }}>Create New Tournament</h3>
+          <div className="input-group">
+            <input 
+              type="text" 
+              className="input-field" 
+              placeholder="Tournament Name (e.g. Summer Cup)" 
+              value={newTName}
+              onChange={(e) => setNewTName(e.target.value)}
+            />
+          </div>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
+            <Plus size={20} /> Create Tournament
+          </button>
+        </form>
+      )}
 
       <div className="tournaments-list">
         <h3 style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>Your Tournaments</h3>

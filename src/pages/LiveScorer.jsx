@@ -61,32 +61,7 @@ const LiveScorer = () => {
     );
   }
 
-  if (!isAuthorized) {
-    return (
-      <div className="page-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh' }}>
-        <div className="glass-panel" style={{ padding: '32px', textAlign: 'center', maxWidth: '400px', width: '100%' }}>
-          <div style={{ background: 'rgba(255,255,255,0.05)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-            <XCircle size={32} color="var(--accent-primary)" />
-          </div>
-          <h2 style={{ marginBottom: '8px' }}>Scoring Locked</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '24px' }}>Please enter the 4-digit PIN to start scoring.</p>
-          
-          <form onSubmit={handleAuth}>
-            <input 
-              type="password" 
-              maxLength={4}
-              placeholder="0 0 0 0"
-              value={pinInput}
-              onChange={e => setPinInput(e.target.value)}
-              style={{ width: '100%', padding: '16px', fontSize: '1.5rem', textAlign: 'center', letterSpacing: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 'var(--border-radius)', color: 'white', marginBottom: '16px' }}
-            />
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Unlock Scoring</button>
-          </form>
-          <button className="btn-outline" style={{ marginTop: '16px', border: 'none', color: 'var(--text-secondary)', background: 'none', cursor: 'pointer' }} onClick={() => navigate('/')}>Back to Dashboard</button>
-        </div>
-      </div>
-    );
-  }
+  // Note: Removed full-page authorization lock here to allow public viewing
 
   const isBattingFirst = activeMatch.currentInnings === 1;
   const battingTeam = isBattingFirst ? activeMatch.team1 : activeMatch.team2;
@@ -575,47 +550,66 @@ const LiveScorer = () => {
       </div>
 
       {/* Scoring Buttons */}
-      <div>
-        <h3 style={{ marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Runs</h3>
-        {activeExtra && (
-          <p style={{ color: 'var(--accent-primary)', fontSize: '0.875rem', marginBottom: '12px', fontWeight: 600 }}>
-            Scoring as: {activeExtra === 'bye' ? 'Byes' : 'Leg Byes'}
-          </p>
-        )}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
-          <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem' }} onClick={() => handleScore(0)}>0</button>
-          <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem' }} onClick={() => handleScore(1)}>1</button>
-          <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem' }} onClick={() => handleScore(2)}>2</button>
-          <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem' }} onClick={() => handleScore(3)}>3</button>
-          <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem', borderColor: 'var(--accent-secondary)', color: 'var(--accent-secondary)' }} onClick={() => handleScore(4)}>4</button>
-          <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem', borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)' }} onClick={() => handleScore(6)}>6</button>
+      {!isAuthorized ? (
+        <div className="glass-panel" style={{ padding: '32px', textAlign: 'center', marginBottom: '40px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+          <Trophy size={32} style={{ marginBottom: '16px', color: 'var(--accent-primary)', opacity: 0.5 }} />
+          <h3 style={{ marginBottom: '8px' }}>View Only Mode</h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '20px' }}>Enter Admin PIN to start scoring this match.</p>
+          <form onSubmit={handleAuth} style={{ display: 'flex', gap: '8px' }}>
+            <input 
+              type="password" 
+              placeholder="PIN" 
+              maxLength={4}
+              value={pinInput}
+              onChange={e => setPinInput(e.target.value)}
+              style={{ flex: 1, padding: '12px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', textAlign: 'center', letterSpacing: '4px' }}
+            />
+            <button type="submit" className="btn btn-primary">Unlock</button>
+          </form>
         </div>
+      ) : (
+        <div>
+          <h3 style={{ marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Runs</h3>
+          {activeExtra && (
+            <p style={{ color: 'var(--accent-primary)', fontSize: '0.875rem', marginBottom: '12px', fontWeight: 600 }}>
+              Scoring as: {activeExtra === 'bye' ? 'Byes' : 'Leg Byes'}
+            </p>
+          )}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
+            <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem' }} onClick={() => handleScore(0)}>0</button>
+            <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem' }} onClick={() => handleScore(1)}>1</button>
+            <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem' }} onClick={() => handleScore(2)}>2</button>
+            <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem' }} onClick={() => handleScore(3)}>3</button>
+            <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem', borderColor: 'var(--accent-secondary)', color: 'var(--accent-secondary)' }} onClick={() => handleScore(4)}>4</button>
+            <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem', borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)' }} onClick={() => handleScore(6)}>6</button>
+          </div>
 
-        <h3 style={{ marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Extras & Wickets</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-          <button 
-            className={`btn ${activeExtra === 'bye' ? 'btn-primary' : 'btn-outline'}`} 
-            style={{ height: '48px' }} 
-            onClick={() => setActiveExtra(prev => prev === 'bye' ? null : 'bye')}
-          >
-            Byes
-          </button>
-          <button 
-            className={`btn ${activeExtra === 'lb' ? 'btn-primary' : 'btn-outline'}`} 
-            style={{ height: '48px' }} 
-            onClick={() => setActiveExtra(prev => prev === 'lb' ? null : 'lb')}
-          >
-            Leg Byes
-          </button>
+          <h3 style={{ marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Extras & Wickets</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <button 
+              className={`btn ${activeExtra === 'bye' ? 'btn-primary' : 'btn-outline'}`} 
+              style={{ height: '48px' }} 
+              onClick={() => setActiveExtra(prev => prev === 'bye' ? null : 'bye')}
+            >
+              Byes
+            </button>
+            <button 
+              className={`btn ${activeExtra === 'lb' ? 'btn-primary' : 'btn-outline'}`} 
+              style={{ height: '48px' }} 
+              onClick={() => setActiveExtra(prev => prev === 'lb' ? null : 'lb')}
+            >
+              Leg Byes
+            </button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
+            <button className="btn btn-outline" style={{ height: '56px' }} onClick={() => handleExtra('wd')}>Wide</button>
+            <button className="btn btn-outline" style={{ height: '56px' }} onClick={() => handleExtra('nb')}>No Ball</button>
+            <button className="btn btn-danger" style={{ gridColumn: 'span 2', height: '64px', fontSize: '1.25rem', textTransform: 'uppercase', letterSpacing: '2px' }} onClick={handleWicket}>
+              Wicket
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
-          <button className="btn btn-outline" style={{ height: '56px' }} onClick={() => handleExtra('wd')}>Wide</button>
-          <button className="btn btn-outline" style={{ height: '56px' }} onClick={() => handleExtra('nb')}>No Ball</button>
-          <button className="btn btn-danger" style={{ gridColumn: 'span 2', height: '64px', fontSize: '1.25rem', textTransform: 'uppercase', letterSpacing: '2px' }} onClick={handleWicket}>
-            Wicket
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* Admin Actions */}
       <div style={{ textAlign: 'center' }}>

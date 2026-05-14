@@ -24,11 +24,39 @@ const getMatchAwards = (match) => {
   }
   return { manOfTheMatch, bestBowler };
 };
++
++const AdminLock = ({ onUnlock, pinInput, setPinInput }) => {
++  const handleSubmit = (e) => {
++    e.preventDefault();
++    onUnlock(pinInput);
++  };
++
++  return (
++    <div className="glass-panel" style={{ padding: '32px', textAlign: 'center', marginBottom: '40px', border: '1px dashed rgba(255,255,255,0.1)' }}>
++      <div style={{ background: 'rgba(255,255,255,0.05)', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
++        <Play size={24} style={{ color: 'var(--accent-primary)', opacity: 0.8 }} />
++      </div>
++      <h3 style={{ marginBottom: '8px' }}>Management Locked</h3>
++      <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '20px' }}>Enter Admin PIN to manage teams or schedule matches.</p>
++      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '8px', maxWidth: '240px', margin: '0 auto' }}>
++        <input 
++          type="password" 
++          placeholder="PIN" 
++          maxLength={4}
++          value={pinInput}
++          onChange={e => setPinInput(e.target.value)}
++          style={{ flex: 1, padding: '12px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', textAlign: 'center', letterSpacing: '4px' }}
++        />
++        <button type="submit" className="btn btn-primary">Unlock</button>
++      </form>
++    </div>
++  );
++};
 
 const TournamentManager = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { tournaments, addTeamToTournament, addPlayer, removePlayer, startMatch, activeMatch, deleteMatch, resetTournamentStats, isLoading, isSyncing } = useCricket();
+  const { tournaments, addTeamToTournament, addPlayer, removePlayer, startMatch, activeMatch, deleteMatch, resetTournamentStats, isLoading, isSyncing, isAuthorized, authorize } = useCricket();
   
   const tournament = tournaments.find(t => t.id === id);
   
@@ -42,6 +70,7 @@ const TournamentManager = () => {
   const [overs, setOvers] = useState('5');
   const [activeTab, setActiveTab] = useState('points'); 
   const [selectedMatch, setSelectedMatch] = useState(null);
+  const [pinInput, setPinInput] = useState('');
 
   if (isLoading) {
     return (
@@ -331,88 +360,94 @@ const TournamentManager = () => {
             </div>
           </div>
 
-          <button
-            className="btn btn-outline"
-            style={{ width: '100%', marginTop: '16px', color: 'var(--accent-danger)', borderColor: 'var(--accent-danger)', background: 'rgba(239,68,68,0.05)', fontSize: '0.875rem' }}
-            onClick={() => {
-              if (window.confirm('This will clear ALL match history, points, wins/losses, NRR, and player stats. Team rosters will be kept. This cannot be undone.')) {
-                resetTournamentStats(tournament.id);
-              }
-            }}
-          >
-            Reset All Tournament Stats
-          </button>
+          {isAuthorized && (
+            <button
+              className="btn btn-outline"
+              style={{ width: '100%', marginTop: '16px', color: 'var(--accent-danger)', borderColor: 'var(--accent-danger)', background: 'rgba(239,68,68,0.05)', fontSize: '0.875rem' }}
+              onClick={() => {
+                if (window.confirm('This will clear ALL match history, points, wins/losses, NRR, and player stats. Team rosters will be kept. This cannot be undone.')) {
+                  resetTournamentStats(tournament.id);
+                }
+              }}
+            >
+              Reset All Tournament Stats
+            </button>
+          )}
         </>
       )}
 
 
       {activeTab === 'teams' && (
-        <div>
-          <form onSubmit={handleAddTeam} className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
-            <h3 style={{ marginBottom: '16px' }}>Add New Team</h3>
-            <div className="input-group">
-              <input 
-                type="text" 
-                className="input-field" 
-                placeholder="Team Name (e.g. Mumbai Indians)" 
-                value={newTeamName}
-                onChange={(e) => setNewTeamName(e.target.value)}
-              />
-            </div>
-            <button type="submit" className="btn btn-secondary" style={{ width: '100%' }}>
-              <Plus size={20} /> Add Team
-            </button>
-          </form>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {tournament.teams.map(team => (
-              <div key={team.id} className="glass-panel" style={{ padding: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-                  <Users size={20} style={{ marginRight: '8px', color: 'var(--accent-secondary)' }} />
-                  <h4 style={{ fontSize: '1.1rem' }}>{team.name}</h4>
-                  <span style={{ marginLeft: 'auto', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                    {team.players.length} Players
-                  </span>
-                </div>
-                
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                  <input 
-                    type="text"
-                    className="input-field"
-                    style={{ padding: '8px 12px', fontSize: '0.875rem' }}
-                    placeholder="Player Name"
-                    value={playerInputs[team.id] || ''}
-                    onChange={(e) => setPlayerInputs({ ...playerInputs, [team.id]: e.target.value })}
-                  />
-                  <button 
-                    className="btn btn-primary" 
-                    style={{ padding: '8px 12px' }}
-                    onClick={() => handleAddPlayer(team.id)}
-                  >
-                    <UserPlus size={16} />
-                  </button>
-                </div>
-
-                {team.players.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {team.players.map(p => (
-                      <span key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', padding: '5px 10px 5px 12px', borderRadius: 'var(--border-radius-pill)', fontSize: '0.8125rem' }}>
-                        {p.name}
-                        <button
-                          onClick={() => removePlayer(tournament.id, team.id, p.id)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', padding: 0, lineHeight: 1 }}
-                          title="Remove player"
-                        >
-                          <XCircle size={14} />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
+        !isAuthorized ? (
+          <AdminLock onUnlock={authorize} pinInput={pinInput} setPinInput={setPinInput} />
+        ) : (
+          <div>
+            <form onSubmit={handleAddTeam} className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
+              <h3 style={{ marginBottom: '16px' }}>Add New Team</h3>
+              <div className="input-group">
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="Team Name (e.g. Mumbai Indians)" 
+                  value={newTeamName}
+                  onChange={(e) => setNewTeamName(e.target.value)}
+                />
               </div>
-            ))}
+              <button type="submit" className="btn btn-secondary" style={{ width: '100%' }}>
+                <Plus size={20} /> Add Team
+              </button>
+            </form>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {tournament.teams.map(team => (
+                <div key={team.id} className="glass-panel" style={{ padding: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
+                    <Users size={20} style={{ marginRight: '8px', color: 'var(--accent-secondary)' }} />
+                    <h4 style={{ fontSize: '1.1rem' }}>{team.name}</h4>
+                    <span style={{ marginLeft: 'auto', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                      {team.players.length} Players
+                    </span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                    <input 
+                      type="text"
+                      className="input-field"
+                      style={{ padding: '8px 12px', fontSize: '0.875rem' }}
+                      placeholder="Player Name"
+                      value={playerInputs[team.id] || ''}
+                      onChange={(e) => setPlayerInputs({ ...playerInputs, [team.id]: e.target.value })}
+                    />
+                    <button 
+                      className="btn btn-primary" 
+                      style={{ padding: '8px 12px' }}
+                      onClick={() => handleAddPlayer(team.id)}
+                    >
+                      <UserPlus size={16} />
+                    </button>
+                  </div>
+
+                  {team.players.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {team.players.map(p => (
+                        <span key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', padding: '5px 10px 5px 12px', borderRadius: 'var(--border-radius-pill)', fontSize: '0.8125rem' }}>
+                          {p.name}
+                          <button
+                            onClick={() => removePlayer(tournament.id, team.id, p.id)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', padding: 0, lineHeight: 1 }}
+                            title="Remove player"
+                          >
+                            <XCircle size={14} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )
       )}
 
       {activeTab === 'history' && (
@@ -448,7 +483,7 @@ const TournamentManager = () => {
                     {resultText}
                   </div>
                   
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isAuthorized ? '1fr auto' : '1fr', gap: '8px' }}>
                     <button 
                       className="btn btn-outline" 
                       style={{ fontSize: '0.875rem', padding: '8px', background: 'rgba(255,255,255,0.03)' }}
@@ -456,17 +491,19 @@ const TournamentManager = () => {
                     >
                       View Scorecard
                     </button>
-                    <button 
-                      className="btn btn-outline" 
-                      style={{ fontSize: '0.875rem', padding: '8px', color: 'var(--accent-danger)', borderColor: 'var(--accent-danger)', background: 'rgba(239,68,68,0.05)' }}
-                      onClick={() => {
-                        if (window.confirm('Delete this match record? This cannot be undone.')) {
-                          deleteMatch(tournament.id, match.id);
-                        }
-                      }}
-                    >
-                      <XCircle size={16} />
-                    </button>
+                    {isAuthorized && (
+                      <button 
+                        className="btn btn-outline" 
+                        style={{ fontSize: '0.875rem', padding: '8px', color: 'var(--accent-danger)', borderColor: 'var(--accent-danger)', background: 'rgba(239,68,68,0.05)' }}
+                        onClick={() => {
+                          if (window.confirm('Delete this match record? This cannot be undone.')) {
+                            deleteMatch(tournament.id, match.id);
+                          }
+                        }}
+                      >
+                        <XCircle size={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -564,85 +601,89 @@ const TournamentManager = () => {
       )}
 
       {activeTab === 'match' && (
-        <form onSubmit={handleStartMatch} className="glass-panel" style={{ padding: '20px' }}>
-          <h3 style={{ marginBottom: '16px' }}>Start New Match</h3>
-          
-          <div className="input-group">
-            <label className="input-label">Team 1 (Batting First)</label>
-            <select 
-              className="input-field" 
-              value={team1Id} 
-              onChange={handleTeam1Change}
-              style={{ backgroundColor: 'var(--bg-secondary)' }}
+        !isAuthorized ? (
+          <AdminLock onUnlock={authorize} pinInput={pinInput} setPinInput={setPinInput} />
+        ) : (
+          <form onSubmit={handleStartMatch} className="glass-panel" style={{ padding: '20px' }}>
+            <h3 style={{ marginBottom: '16px' }}>Start New Match</h3>
+            
+            <div className="input-group">
+              <label className="input-label">Team 1 (Batting First)</label>
+              <select 
+                className="input-field" 
+                value={team1Id} 
+                onChange={handleTeam1Change}
+                style={{ backgroundColor: 'var(--bg-secondary)' }}
+              >
+                <option value="">Select Team</option>
+                {tournament.teams.map(t => (
+                  <option key={t.id} value={t.id}>{t.name} ({t.players.length} players)</option>
+                ))}
+              </select>
+              {renderPlayingSquadSelection(team1Id, team1PlayingIds, 1)}
+            </div>
+
+            <div className="input-group" style={{ alignItems: 'center', margin: '8px 0' }}>
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>VS</span>
+            </div>
+
+            <div className="input-group">
+              <label className="input-label">Team 2 (Bowling First)</label>
+              <select 
+                className="input-field" 
+                value={team2Id} 
+                onChange={handleTeam2Change}
+                style={{ backgroundColor: 'var(--bg-secondary)' }}
+              >
+                <option value="">Select Team</option>
+                {tournament.teams.map(t => (
+                  <option key={t.id} value={t.id}>{t.name} ({t.players.length} players)</option>
+                ))}
+              </select>
+              {renderPlayingSquadSelection(team2Id, team2PlayingIds, 2)}
+            </div>
+
+            <div className="input-group" style={{ marginTop: '16px' }}>
+              <label className="input-label">Total Overs</label>
+              <input 
+                type="number" 
+                className="input-field" 
+                min="1" 
+                max="50" 
+                value={overs} 
+                onChange={(e) => setOvers(e.target.value)}
+              />
+            </div>
+
+            <div className="input-group" style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input 
+                type="checkbox" 
+                id="compulsoryChase"
+                checked={isCompulsoryChase} 
+                onChange={(e) => setIsCompulsoryChase(e.target.checked)}
+                style={{ width: '18px', height: '18px', accentColor: 'var(--accent-primary)' }}
+              />
+              <label htmlFor="compulsoryChase" style={{ fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
+                Compulsory Chase Rule
+              </label>
+            </div>
+
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              style={{ width: '100%', marginTop: '24px' }}
+              disabled={tournament.teams.length < 2}
             >
-              <option value="">Select Team</option>
-              {tournament.teams.map(t => (
-                <option key={t.id} value={t.id}>{t.name} ({t.players.length} players)</option>
-              ))}
-            </select>
-            {renderPlayingSquadSelection(team1Id, team1PlayingIds, 1)}
-          </div>
-
-          <div className="input-group" style={{ alignItems: 'center', margin: '8px 0' }}>
-            <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>VS</span>
-          </div>
-
-          <div className="input-group">
-            <label className="input-label">Team 2 (Bowling First)</label>
-            <select 
-              className="input-field" 
-              value={team2Id} 
-              onChange={handleTeam2Change}
-              style={{ backgroundColor: 'var(--bg-secondary)' }}
-            >
-              <option value="">Select Team</option>
-              {tournament.teams.map(t => (
-                <option key={t.id} value={t.id}>{t.name} ({t.players.length} players)</option>
-              ))}
-            </select>
-            {renderPlayingSquadSelection(team2Id, team2PlayingIds, 2)}
-          </div>
-
-          <div className="input-group" style={{ marginTop: '16px' }}>
-            <label className="input-label">Total Overs</label>
-            <input 
-              type="number" 
-              className="input-field" 
-              min="1" 
-              max="50" 
-              value={overs} 
-              onChange={(e) => setOvers(e.target.value)}
-            />
-          </div>
-
-          <div className="input-group" style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <input 
-              type="checkbox" 
-              id="compulsoryChase"
-              checked={isCompulsoryChase} 
-              onChange={(e) => setIsCompulsoryChase(e.target.checked)}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--accent-primary)' }}
-            />
-            <label htmlFor="compulsoryChase" style={{ fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
-              Compulsory Chase Rule
-            </label>
-          </div>
-
-          <button 
-            type="submit" 
-            className="btn btn-primary" 
-            style={{ width: '100%', marginTop: '24px' }}
-            disabled={tournament.teams.length < 2}
-          >
-            <Play size={20} /> Start Match
-          </button>
-          
-          {tournament.teams.length < 2 && (
-            <p style={{ color: 'var(--accent-danger)', fontSize: '0.875rem', marginTop: '8px', textAlign: 'center' }}>
-              Add at least 2 teams to start a match.
-            </p>
-          )}
-        </form>
+              <Play size={20} /> Start Match
+            </button>
+            
+            {tournament.teams.length < 2 && (
+              <p style={{ color: 'var(--accent-danger)', fontSize: '0.75rem', marginTop: '12px', textAlign: 'center' }}>
+                Need at least 2 teams to start a match.
+              </p>
+            )}
+          </form>
+        )
       )}
 
     </div>
