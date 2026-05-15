@@ -22,6 +22,7 @@ const LiveScorer = () => {
   const [wType, setWType] = useState('Caught');
   const [wFielder, setWFielder] = useState('');
   const [wOutPlayerId, setWOutPlayerId] = useState('');
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   const getMatchAwards = (match) => {
     const allPlayers = [...match.team1.players, ...match.team2.players];
@@ -677,24 +678,32 @@ const LiveScorer = () => {
               Wicket
             </button>
           </div>
+
+          {/* Admin Actions */}
+          <div style={{ textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '24px' }}>
+            {!showCancelConfirm ? (
+              <button 
+                className="btn" 
+                style={{ background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.875rem' }}
+                onClick={() => setShowCancelConfirm(true)}
+              >
+                <XCircle size={16} style={{ marginRight: '4px' }} /> Cancel Match
+              </button>
+            ) : (
+              <div style={{ background: 'rgba(239, 68, 68, 0.05)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
+                <p style={{ color: 'var(--text-primary)', fontSize: '0.875rem', marginBottom: '12px' }}>Confirm match cancellation? All progress will be lost.</p>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                  <button className="btn btn-outline" style={{ flex: 1, padding: '8px' }} onClick={() => setShowCancelConfirm(false)}>No, Back</button>
+                  <button className="btn btn-danger" style={{ flex: 1, padding: '8px' }} onClick={async () => {
+                    await cancelActiveMatch();
+                    navigate('/');
+                  }}>Yes, Cancel</button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
-
-      {/* Admin Actions */}
-      <div style={{ textAlign: 'center' }}>
-        <button 
-          className="btn" 
-          style={{ background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.875rem' }}
-          onClick={async () => {
-            if (window.confirm("Are you sure you want to cancel this match? No data will be saved.")) {
-              await cancelActiveMatch();
-              navigate('/');
-            }
-          }}
-        >
-          <XCircle size={16} style={{ marginRight: '4px' }} /> Cancel Match
-        </button>
-      </div>
 
       {/* Bowler Selection Modal */}
       {activeMatch.promptForBowler && !activeMatch.isComplete && !activeMatch.isInningsBreak && (
