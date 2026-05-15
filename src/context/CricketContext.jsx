@@ -13,6 +13,7 @@ export const CricketProvider = ({ children }) => {
 
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [appPin, setAppPinState] = useState('0000');
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Load from Cloud on Start
   useEffect(() => {
@@ -65,6 +66,9 @@ export const CricketProvider = ({ children }) => {
         const savedAuth = localStorage.getItem('isAuthorized');
         if (savedAuth === 'true') setIsAuthorized(true);
 
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) setCurrentUser(JSON.parse(savedUser));
+
       } catch (err) {
         console.error('Initial load error:', err);
       } finally {
@@ -95,6 +99,18 @@ export const CricketProvider = ({ children }) => {
     localStorage.removeItem('isAuthorized');
   };
 
+  const login = (name) => {
+    const user = { name, loggedInAt: new Date().toISOString() };
+    setCurrentUser(user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+  };
+
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('currentUser');
+    deauthorize(); // Log out of scoring too
+  };
+
   // Cloud Sync Helpers
   const syncTournaments = async (updatedList) => {
     setIsSyncing(true);
@@ -118,7 +134,13 @@ export const CricketProvider = ({ children }) => {
 
   // Actions
   const addTournament = async (name) => {
-    const newTournament = { id: Date.now().toString(), name, teams: [], matches: [] };
+    const newTournament = { 
+      id: Date.now().toString(), 
+      name, 
+      organizer: currentUser?.name || 'Anonymous',
+      teams: [], 
+      matches: [] 
+    };
     const updated = [...tournaments, newTournament];
     setTournaments(updated);
     await syncTournaments([newTournament]);
@@ -633,6 +655,7 @@ export const CricketProvider = ({ children }) => {
     <CricketContext.Provider value={{
       tournaments, activeMatch, isLoading, isSyncing,
       isAuthorized, appPin, setAppPin, authorize, deauthorize,
+      currentUser, login, logout,
       addTournament, addTeamToTournament, addPlayer, removePlayer,
       startMatch, setOpeningPlayers, setNextBatsman, setNextBowler, retireBatter,
       scoreBall, swapStrike, changeBowler, endInningsBreak,

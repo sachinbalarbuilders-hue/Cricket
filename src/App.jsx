@@ -6,13 +6,16 @@ import { CricketProvider } from './context/CricketContext';
 import Dashboard from './pages/Dashboard';
 import TournamentManager from './pages/TournamentManager';
 import LiveScorer from './pages/LiveScorer';
+import Login from './pages/Login';
 
 import { useCricket } from './context/CricketContext';
 
 const BottomNav = () => {
   const location = useLocation();
-  const { activeMatch } = useCricket();
+  const { activeMatch, currentUser } = useCricket();
   
+  if (!currentUser) return null;
+
   return (
     <div className="bottom-nav">
       <Link to="/" className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}>
@@ -35,20 +38,32 @@ const BottomNav = () => {
 };
 
 function App() {
+  const { currentUser, isLoading } = useCricket();
+
+  if (isLoading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-primary)' }}>
+      <div className="loader"></div>
+    </div>
+  );
+
   return (
-    <CricketProvider>
-      <Router>
-        <div className="app-layout">
+    <Router>
+      <div className="app-layout">
+        {!currentUser ? (
+          <Routes>
+            <Route path="*" element={<Login />} />
+          </Routes>
+        ) : (
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/tournaments/:id" element={<TournamentManager />} />
             <Route path="/tournaments" element={<Dashboard />} />
             <Route path="/match" element={<LiveScorer />} />
           </Routes>
-          <BottomNav />
-        </div>
-      </Router>
-    </CricketProvider>
+        )}
+        <BottomNav />
+      </div>
+    </Router>
   );
 }
 

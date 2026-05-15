@@ -199,7 +199,10 @@ const TournamentManager = () => {
           <ArrowLeft size={24} />
         </button>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{tournament.name}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{tournament.name}</div>
+            <span style={{ fontSize: '0.65rem', color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, textTransform: 'uppercase' }}>Organizer: {tournament.organizer || 'Admin'}</span>
+          </div>
           {isSyncing && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--accent-primary)', marginTop: '2px', fontWeight: 400 }}>
               <div className="live-dot" style={{ width: '6px', height: '6px' }}></div>

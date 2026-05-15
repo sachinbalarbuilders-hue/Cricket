@@ -4,7 +4,11 @@ import { Trophy, Plus, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const { tournaments, addTournament, activeMatch, isLoading, isSyncing, appPin, setAppPin, isAuthorized, authorize, deauthorize } = useCricket();
+  const { 
+    tournaments, addTournament, activeMatch, isLoading, isSyncing, 
+    appPin, setAppPin, isAuthorized, authorize, deauthorize,
+    currentUser, logout 
+  } = useCricket();
   const [newTName, setNewTName] = useState('');
   const [pinInput, setPinInput] = useState('');
   const [showAuth, setShowAuth] = useState(false);
@@ -53,6 +57,16 @@ const Dashboard = () => {
     <div className="page-container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
         <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', background: 'rgba(255, 215, 0, 0.1)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>ORGANIZER</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Welcome, {currentUser?.name}</span>
+            <button 
+              onClick={logout}
+              style={{ background: 'none', border: 'none', color: 'var(--accent-danger)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, marginLeft: '8px', textDecoration: 'underline', opacity: 0.7 }}
+            >
+              Logout
+            </button>
+          </div>
           <h1 className="page-title" style={{ margin: 0 }}><Trophy /> Tournaments</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
             {isSyncing ? (
@@ -156,7 +170,7 @@ const Dashboard = () => {
                 <div>
                   <h4 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{t.name}</h4>
                   <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                    {t.teams.length} Teams • {t.matches.length} Matches Played
+                    {t.teams.length} Teams • {t.matches.length} Matches • By {t.organizer || 'Anonymous'}
                   </p>
                 </div>
                 <ChevronRight color="var(--text-secondary)" />
