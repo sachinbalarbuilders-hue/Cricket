@@ -24,34 +24,34 @@ const getMatchAwards = (match) => {
   }
   return { manOfTheMatch, bestBowler };
 };
-+
-+const AdminLock = ({ onUnlock, pinInput, setPinInput }) => {
-+  const handleSubmit = (e) => {
-+    e.preventDefault();
-+    onUnlock(pinInput);
-+  };
-+
-+  return (
-+    <div className="glass-panel" style={{ padding: '32px', textAlign: 'center', marginBottom: '40px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-+      <div style={{ background: 'rgba(255,255,255,0.05)', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-+        <Play size={24} style={{ color: 'var(--accent-primary)', opacity: 0.8 }} />
-+      </div>
-+      <h3 style={{ marginBottom: '8px' }}>Management Locked</h3>
-+      <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '20px' }}>Enter Admin PIN to manage teams or schedule matches.</p>
-+      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '8px', maxWidth: '240px', margin: '0 auto' }}>
-+        <input 
-+          type="password" 
-+          placeholder="PIN" 
-+          maxLength={4}
-+          value={pinInput}
-+          onChange={e => setPinInput(e.target.value)}
-+          style={{ flex: 1, padding: '12px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', textAlign: 'center', letterSpacing: '4px' }}
-+        />
-+        <button type="submit" className="btn btn-primary">Unlock</button>
-+      </form>
-+    </div>
-+  );
-+};
+
+const AdminLock = ({ onUnlock, pinInput, setPinInput }) => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onUnlock(pinInput);
+  };
+
+  return (
+    <div className="glass-panel" style={{ padding: '32px', textAlign: 'center', marginBottom: '40px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+      <div style={{ background: 'rgba(255,255,255,0.05)', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+        <Play size={24} style={{ color: 'var(--accent-primary)', opacity: 0.8 }} />
+      </div>
+      <h3 style={{ marginBottom: '8px' }}>Management Locked</h3>
+      <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '20px' }}>Enter Admin PIN to manage teams or schedule matches.</p>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '8px', maxWidth: '240px', margin: '0 auto' }}>
+        <input 
+          type="password" 
+          placeholder="PIN" 
+          maxLength={4}
+          value={pinInput}
+          onChange={e => setPinInput(e.target.value)}
+          style={{ flex: 1, padding: '12px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', textAlign: 'center', letterSpacing: '4px' }}
+        />
+        <button type="submit" className="btn btn-primary">Unlock</button>
+      </form>
+    </div>
+  );
+};
 
 const TournamentManager = () => {
   const { id } = useParams();

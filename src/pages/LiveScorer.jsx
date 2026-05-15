@@ -685,9 +685,9 @@ const LiveScorer = () => {
         <button 
           className="btn" 
           style={{ background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.875rem' }}
-          onClick={() => {
+          onClick={async () => {
             if (window.confirm("Are you sure you want to cancel this match? No data will be saved.")) {
-              cancelActiveMatch();
+              await cancelActiveMatch();
               navigate('/');
             }
           }}
