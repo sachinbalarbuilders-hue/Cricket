@@ -6,7 +6,7 @@ import { CheckCircle, XCircle, User, ArrowLeftRight, Trophy, RefreshCcw } from '
 const LiveScorer = () => {
   const { 
     activeMatch, scoreBall, endMatchAndSave, cancelActiveMatch,
-    setOpeningPlayers, setNextBatsman, setNextBowler, endInningsBreak, swapStrike, changeBowler, 
+    setOpeningPlayers, setNextBatsman, setNextBowler, retireBatter, endInningsBreak, swapStrike, changeBowler, 
     isSyncing, isAuthorized, authorize, deauthorize
   } = useCricket();
   const navigate = useNavigate();
@@ -18,6 +18,10 @@ const LiveScorer = () => {
   const [selBowler, setSelBowler] = useState('');
   const [activeExtra, setActiveExtra] = useState(null);
   const [showScorecardModal, setShowScorecardModal] = useState(false);
+  const [wicketModalOpen, setWicketModalOpen] = useState(false);
+  const [wType, setWType] = useState('Caught');
+  const [wFielder, setWFielder] = useState('');
+  const [wOutPlayerId, setWOutPlayerId] = useState('');
 
   const getMatchAwards = (match) => {
     const allPlayers = [...match.team1.players, ...match.team2.players];
@@ -242,7 +246,22 @@ const LiveScorer = () => {
     setActiveExtra(null);
   };
   const handleExtra = (type) => scoreBall(0, false, type);
-  const handleWicket = () => scoreBall(0, true);
+  
+  const handleWicket = () => {
+    setWOutPlayerId(activeMatch.strikerId);
+    setWicketModalOpen(true);
+  };
+
+  const confirmWicket = () => {
+    scoreBall(0, true, null, {
+      type: wType,
+      fielderName: wFielder,
+      outPlayerId: wOutPlayerId
+    });
+    setWicketModalOpen(false);
+    setWType('Caught');
+    setWFielder('');
+  };
 
   if (showScorecardModal) {
     return (
@@ -264,9 +283,13 @@ const LiveScorer = () => {
           <h4 style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px', marginBottom: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Batting</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
             {activeMatch.team1.players.filter(p => p.matchBalls > 0 || p.matchRuns > 0 || p.isOut || (activeMatch.currentInnings === 1 && (p.id === activeMatch.strikerId || p.id === activeMatch.nonStrikerId))).map(p => (
-              <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                <span>{p.name} {p.isOut ? '' : (activeMatch.currentInnings === 1 && (p.id === activeMatch.strikerId || p.id === activeMatch.nonStrikerId) ? '*' : '')}</span>
-                <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({p.matchBalls})</span></span>
+              <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontWeight: 500 }}>{p.name} {p.isOut ? '' : (activeMatch.currentInnings === 1 && (p.id === activeMatch.strikerId || p.id === activeMatch.nonStrikerId) ? '*' : '')}</span>
+                  {p.isOut && <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>{p.dismissal}</span>}
+                  {!p.isOut && activeMatch.currentInnings === 1 && (p.id === activeMatch.strikerId || p.id === activeMatch.nonStrikerId) && <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)' }}>not out</span>}
+                </div>
+                <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({p.matchBalls})</span></span>
               </div>
             ))}
           </div>
@@ -293,9 +316,13 @@ const LiveScorer = () => {
             <h4 style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px', marginBottom: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Batting</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
               {activeMatch.team2.players.filter(p => p.matchBalls > 0 || p.matchRuns > 0 || p.isOut || p.id === activeMatch.strikerId || p.id === activeMatch.nonStrikerId).map(p => (
-                <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                  <span>{p.name} {p.isOut ? '' : (p.id === activeMatch.strikerId || p.id === activeMatch.nonStrikerId ? '*' : '')}</span>
-                  <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({p.matchBalls})</span></span>
+                <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontWeight: 500 }}>{p.name} {p.isOut ? '' : (p.id === activeMatch.strikerId || p.id === activeMatch.nonStrikerId ? '*' : '')}</span>
+                    {p.isOut && <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>{p.dismissal}</span>}
+                    {!p.isOut && (p.id === activeMatch.strikerId || p.id === activeMatch.nonStrikerId) && <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)' }}>not out</span>}
+                  </div>
+                  <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({p.matchBalls})</span></span>
                 </div>
               ))}
             </div>
@@ -499,6 +526,14 @@ const LiveScorer = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-primary)', fontWeight: 600 }}>
                 <User size={16} /> {striker.name} *
+                {isAuthorized && (
+                  <button 
+                    onClick={() => { if(window.confirm(`${striker.name} is injured/retired hurt?`)) retireBatter(striker.id); }}
+                    style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--accent-danger)', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    Injured
+                  </button>
+                )}
               </div>
               <div style={{ fontWeight: 600 }}>{striker.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({striker.matchBalls})</span></div>
             </div>
@@ -507,6 +542,14 @@ const LiveScorer = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
                 <User size={16} /> {nonStriker.name}
+                {isAuthorized && (
+                  <button 
+                    onClick={() => { if(window.confirm(`${nonStriker.name} is injured/retired hurt?`)) retireBatter(nonStriker.id); }}
+                    style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-secondary)', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    Injured
+                  </button>
+                )}
               </div>
               <div>{nonStriker.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({nonStriker.matchBalls})</span></div>
             </div>
@@ -550,6 +593,28 @@ const LiveScorer = () => {
         <div style={{ textAlign: 'right' }}>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Balls</p>
           <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{activeMatch.partnership.balls}</p>
+        </div>
+      </div>
+
+      {/* Over History */}
+      <div className="glass-panel" style={{ padding: '12px 16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', overflowX: 'auto' }}>
+        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', minWidth: 'fit-content' }}>This Over:</span>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {(activeMatch.currentOverHistory || []).map((ball, idx) => (
+            <div key={idx} style={{ 
+              minWidth: '28px', height: '28px', borderRadius: '50%', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              fontSize: '0.75rem', fontWeight: 700,
+              background: ball === '6' ? 'var(--accent-primary)' : 
+                          ball === '4' ? 'var(--accent-secondary)' : 
+                          ball === 'W' ? 'var(--accent-danger)' : 'rgba(255,255,255,0.1)',
+              color: (ball === '6' || ball === '4' || ball === 'W') ? '#000' : 'var(--text-primary)',
+              border: (ball === 'Wd' || ball === 'Nb') ? '1px solid var(--accent-secondary)' : 'none'
+            }}>
+              {ball}
+            </div>
+          ))}
+          {(!activeMatch.currentOverHistory || activeMatch.currentOverHistory.length === 0) && <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Waiting for first ball...</span>}
         </div>
       </div>
 
@@ -631,6 +696,53 @@ const LiveScorer = () => {
         </button>
       </div>
 
+      {/* Wicket Details Modal */}
+      {wicketModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '24px' }}>
+            <h2 style={{ marginBottom: '20px', color: 'var(--accent-danger)' }}>Wicket Details</h2>
+            
+            <div className="input-group">
+              <label className="input-label">Who is out?</label>
+              <select className="input-field" value={wOutPlayerId} onChange={e => setWOutPlayerId(e.target.value)} style={{ background: 'var(--bg-secondary)' }}>
+                <option value={activeMatch.strikerId}>{striker?.name} (Striker)</option>
+                <option value={activeMatch.nonStrikerId}>{nonStriker?.name} (Non-Striker)</option>
+              </select>
+            </div>
+
+            <div className="input-group">
+              <label className="input-label">Wicket Type</label>
+              <select className="input-field" value={wType} onChange={e => setWType(e.target.value)} style={{ background: 'var(--bg-secondary)' }}>
+                <option value="Caught">Caught</option>
+                <option value="Bowled">Bowled</option>
+                <option value="LBW">LBW</option>
+                <option value="Run Out">Run Out</option>
+                <option value="Stumped">Stumped</option>
+                <option value="Hit Wicket">Hit Wicket</option>
+              </select>
+            </div>
+
+            {(wType === 'Caught' || wType === 'Run Out' || wType === 'Stumped') && (
+              <div className="input-group">
+                <label className="input-label">Fielder Name</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="e.g. Rahul" 
+                  value={wFielder}
+                  onChange={e => setWFielder(e.target.value)}
+                  style={{ background: 'var(--bg-secondary)' }}
+                />
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+              <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => setWicketModalOpen(false)}>Cancel</button>
+              <button className="btn btn-danger" style={{ flex: 2 }} onClick={confirmWicket}>Confirm Wicket</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

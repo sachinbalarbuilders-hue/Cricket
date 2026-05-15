@@ -185,7 +185,7 @@ export const CricketProvider = ({ children }) => {
       return {
         ...team, runs: 0, wickets: 0, balls: 0,
         players: playingRoster.map(p => ({
-          ...p, matchRuns: 0, matchBalls: 0, matchWickets: 0, matchRunsConceded: 0, matchBallsBowled: 0, isOut: false
+          ...p, matchRuns: 0, matchBalls: 0, matchWickets: 0, matchRunsConceded: 0, matchBallsBowled: 0, isOut: false, dismissal: ''
         }))
       };
     };
@@ -198,7 +198,8 @@ export const CricketProvider = ({ children }) => {
       isCompulsoryChase,
       battingTeamId: team1Id, bowlingTeamId: team2Id, partnership: { runs: 0, balls: 0 }, isComplete: false,
       target: null, strikerId: null, nonStrikerId: null, currentBowlerId: null,
-      promptForBatsmen: true, promptForBowler: true, promptForNextBatsman: false, isInningsBreak: false
+      promptForBatsmen: true, promptForBowler: true, promptForNextBatsman: false, isInningsBreak: false,
+      currentOverHistory: []
     };
 
     setActiveMatch(match);
@@ -212,22 +213,64 @@ export const CricketProvider = ({ children }) => {
   };
 
   const setNextBatsman = (batsmanId) => {
-    setActiveMatch(prev => ({
-      ...prev,
-      strikerId: batsmanId, // new batsman comes on strike
-      promptForNextBatsman: false
-    }));
+    setActiveMatch(prev => {
+      const match = { ...prev };
+      if (match.strikerId === null) match.strikerId = batsmanId;
+      else if (match.nonStrikerId === null) match.nonStrikerId = batsmanId;
+      else match.strikerId = batsmanId; 
+      match.promptForNextBatsman = false;
+      return match;
+    });
   };
 
   const setNextBowler = (bowlerId) => {
     setActiveMatch(prev => ({
       ...prev,
       currentBowlerId: bowlerId,
-      promptForBowler: false
+      promptForBowler: false,
+      currentOverHistory: [] // Reset history for new over
     }));
   };
 
-  const scoreBall = async (runs, isWicket = false, extra = null) => {
+  const retireBatter = async (playerId) => {
+    if (!activeMatch) return;
+    const match = JSON.parse(JSON.stringify(activeMatch));
+    const battingKey = match.currentInnings === 1 ? 'team1' : 'team2';
+    
+    const player = match[battingKey].players.find(p => p.id === playerId);
+    if (!player) return;
+
+    player.isOut = true;
+    player.isRetired = true;
+
+    if (match.strikerId === playerId) {
+      match.strikerId = null;
+    } else if (match.nonStrikerId === playerId) {
+      match.nonStrikerId = null;
+    }
+
+    // Check if anyone left to bat
+    const playersOut = match[battingKey].players.filter(p => p.isOut).length;
+    const isAllOut = playersOut >= match[battingKey].players.length - 1;
+
+    if (isAllOut) {
+      match.promptForNextBatsman = false;
+      // Trigger end innings logic
+      if (match.currentInnings === 1) {
+        match.isInningsBreak = true; match.currentInnings = 2; match.target = match.team1.runs + 1;
+        match.battingTeamId = match.team2.id; match.bowlingTeamId = match.team1.id;
+        match.partnership = { runs: 0, balls: 0 }; match.promptForBatsmen = true;
+        match.promptForBowler = true; match.strikerId = null; match.nonStrikerId = null; match.currentBowlerId = null;
+      } else { match.isComplete = true; }
+    } else {
+      match.promptForNextBatsman = true;
+    }
+
+    setActiveMatch(match);
+    await syncActiveMatch(match);
+  };
+
+  const scoreBall = async (runs, isWicket = false, extra = null, wicketData = null) => {
     if (!activeMatch) return;
     let runsScored = runs;
     let ballCounted = true;
@@ -251,7 +294,7 @@ export const CricketProvider = ({ children }) => {
     if (bowler) {
       if (extra !== 'bye' && extra !== 'lb') bowler.matchRunsConceded += runsScored;
       if (ballCounted) bowler.matchBallsBowled += 1;
-      if (isWicket && extra !== 'runout') bowler.matchWickets += 1;
+      // Wicket logic moved below to handle wicketData
     }
 
     if (ballCounted) {
@@ -259,20 +302,61 @@ export const CricketProvider = ({ children }) => {
       match.partnership.balls += 1;
     }
 
+    if (!match.currentOverHistory) match.currentOverHistory = [];
+
+    // Track ball in over history
+    let ballLabel = runs.toString();
+    if (extra === 'wd') ballLabel = 'Wd';
+    else if (extra === 'nb') ballLabel = 'Nb';
+    else if (isWicket) ballLabel = 'W';
+    else if (runs === 0) ballLabel = '.';
+    
+    match.currentOverHistory.push(ballLabel);
+
     let strikeRotated = false;
     if (runs % 2 !== 0 && extra !== 'wd') strikeRotated = true;
 
     const maxBalls = match.overs * 6;
-    const isAllOut = match[battingKey].wickets >= match[battingKey].players.length - 1;
+    let playersOutCount = match[battingKey].players.filter(p => p.isOut).length;
+    let isAllOut = playersOutCount >= match[battingKey].players.length - 1;
     const isOversDone = match[battingKey].balls >= maxBalls;
     
     if (isWicket) {
       match[battingKey].wickets += 1;
-      if (striker) striker.isOut = true;
+      
+      const outPlayerId = wicketData?.outPlayerId || match.strikerId;
+      const outPlayer = match[battingKey].players.find(p => p.id === outPlayerId);
+      
+      if (outPlayer) {
+        outPlayer.isOut = true;
+        const wType = wicketData?.type || 'Out';
+        const fName = wicketData?.fielderName || '';
+        
+        if (wType === 'Caught') outPlayer.dismissal = `c ${fName} b ${bowler?.name || 'Bowler'}`;
+        else if (wType === 'Bowled') outPlayer.dismissal = `b ${bowler?.name || 'Bowler'}`;
+        else if (wType === 'LBW') outPlayer.dismissal = `lbw b ${bowler?.name || 'Bowler'}`;
+        else if (wType === 'Run Out') outPlayer.dismissal = `run out (${fName})`;
+        else if (wType === 'Stumped') outPlayer.dismissal = `st ${fName} b ${bowler?.name || 'Bowler'}`;
+        else if (wType === 'Hit Wicket') outPlayer.dismissal = `hit wicket b ${bowler?.name || 'Bowler'}`;
+        else outPlayer.dismissal = 'Out';
+
+        if (wType !== 'Run Out' && bowler) {
+          bowler.matchWickets += 1;
+        }
+
+        // Update isAllOut after current wicket
+        playersOutCount = match[battingKey].players.filter(p => p.isOut).length;
+        isAllOut = playersOutCount >= match[battingKey].players.length - 1;
+      }
+
+      if (match.strikerId === outPlayerId) match.strikerId = null;
+      else if (match.nonStrikerId === outPlayerId) match.nonStrikerId = null;
+
       match.partnership = { runs: 0, balls: 0 };
       
       // Re-calculate isAllOut after incrementing wickets
-      const stillAlive = match[battingKey].wickets < match[battingKey].players.length - 1;
+      const playersOutNow = match[battingKey].players.filter(p => p.isOut).length;
+      const stillAlive = playersOutNow < match[battingKey].players.length - 1;
       if (stillAlive) {
         match.promptForNextBatsman = true;
       }
@@ -309,6 +393,7 @@ export const CricketProvider = ({ children }) => {
         match.battingTeamId = match.team2.id; match.bowlingTeamId = match.team1.id;
         match.partnership = { runs: 0, balls: 0 }; match.promptForBatsmen = true;
         match.promptForBowler = true; match.strikerId = null; match.nonStrikerId = null; match.currentBowlerId = null;
+        match.currentOverHistory = [];
       } else { match.isComplete = true; }
     }
 
@@ -511,7 +596,7 @@ export const CricketProvider = ({ children }) => {
       tournaments, activeMatch, isLoading, isSyncing,
       isAuthorized, appPin, setAppPin, authorize, deauthorize,
       addTournament, addTeamToTournament, addPlayer, removePlayer,
-      startMatch, setOpeningPlayers, setNextBatsman, setNextBowler,
+      startMatch, setOpeningPlayers, setNextBatsman, setNextBowler, retireBatter,
       scoreBall, swapStrike, changeBowler, endInningsBreak,
       endMatchAndSave, cancelActiveMatch, deleteMatch, resetTournamentStats
     }}>
