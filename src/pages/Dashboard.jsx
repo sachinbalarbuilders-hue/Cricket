@@ -64,7 +64,7 @@ const Dashboard = () => {
               onClick={logout}
               style={{ background: 'none', border: 'none', color: 'var(--accent-danger)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, marginLeft: '8px', textDecoration: 'underline', opacity: 0.7 }}
             >
-              Logout
+              (Switch)
             </button>
           </div>
           <h1 className="page-title" style={{ margin: 0 }}><Trophy /> Tournaments</h1>
@@ -80,13 +80,13 @@ const Dashboard = () => {
                   onClick={handleSetPin}
                   style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
                 >
-                  Change Scoring PIN
+                  Change PIN
                 </button>
                 <button 
                   onClick={deauthorize}
                   style={{ background: 'none', border: 'none', color: 'var(--accent-danger)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
                 >
-                  Admin Logout
+                  Lock Scoring
                 </button>
               </div>
             ) : (
@@ -94,7 +94,7 @@ const Dashboard = () => {
                 onClick={() => setShowAuth(!showAuth)}
                 style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
               >
-                Admin Login
+                Unlock Scoring
               </button>
             )}
           </div>
