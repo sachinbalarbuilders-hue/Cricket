@@ -449,10 +449,14 @@ const LiveScorer = () => {
 
         {activeMatch.currentInnings === 2 && (
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px', fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
-            Need {activeMatch.target - battingTeam.runs} runs from {(activeMatch.overs * 6) - battingTeam.balls} balls
+            {activeMatch.target - battingTeam.runs > 0 ? (
+              <>Need {activeMatch.target - battingTeam.runs} runs from {(activeMatch.overs * 6) - battingTeam.balls} balls</>
+            ) : (
+              <span style={{ color: '#ffd700' }}>Target Reached! Leading by {battingTeam.runs - (activeMatch.target - 1)} runs</span>
+            )}
             {activeMatch.isCompulsoryChase && (
               <div style={{ fontSize: '0.7rem', color: '#ffd700', marginTop: '4px', fontWeight: 500 }}>
-                ★ Compulsory Chase Rule is ON
+                ★ Compulsory Chase: Full overs or All Out required
               </div>
             )}
           </div>

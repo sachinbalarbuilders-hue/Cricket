@@ -291,7 +291,15 @@ export const CricketProvider = ({ children }) => {
     }
 
     let endInnings = isAllOut || isOversDone || (match[battingKey].wickets >= match[battingKey].players.length - 1);
-    if (match.currentInnings === 2 && match[battingKey].runs >= match.target) endInnings = true;
+    
+    // If NOT compulsory chase, end match as soon as target is reached
+    if (match.currentInnings === 2 && !match.isCompulsoryChase && match[battingKey].runs >= match.target) {
+      endInnings = true;
+    }
+    
+    // If compulsory chase, only end if all out or overs done (already covered by endInnings),
+    // but we should still mark match as complete if target was reached and it's the end of innings.
+    // The existing logic below handles this.
 
     if (endInnings) {
       match.promptForNextBatsman = false;
