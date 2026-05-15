@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Trophy, Activity, Home } from 'lucide-react';
-import { CricketProvider } from './context/CricketContext';
 
 import Dashboard from './pages/Dashboard';
 import TournamentManager from './pages/TournamentManager';
