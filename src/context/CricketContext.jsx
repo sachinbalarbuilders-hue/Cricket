@@ -262,15 +262,24 @@ export const CricketProvider = ({ children }) => {
     let strikeRotated = false;
     if (runs % 2 !== 0 && extra !== 'wd') strikeRotated = true;
 
+    const maxBalls = match.overs * 6;
+    const isAllOut = match[battingKey].wickets >= match[battingKey].players.length - 1;
+    const isOversDone = match[battingKey].balls >= maxBalls;
+    
     if (isWicket) {
       match[battingKey].wickets += 1;
       if (striker) striker.isOut = true;
       match.partnership = { runs: 0, balls: 0 };
-      match.promptForNextBatsman = true;
+      
+      // Re-calculate isAllOut after incrementing wickets
+      const stillAlive = match[battingKey].wickets < match[battingKey].players.length - 1;
+      if (stillAlive) {
+        match.promptForNextBatsman = true;
+      }
     }
 
     const isOverComplete = ballCounted && (match[battingKey].balls % 6 === 0);
-    if (isOverComplete) {
+    if (isOverComplete && !match.isComplete) {
       strikeRotated = !strikeRotated;
       match.promptForBowler = true;
     }
@@ -281,14 +290,12 @@ export const CricketProvider = ({ children }) => {
       match.nonStrikerId = temp;
     }
 
-    const maxBalls = match.overs * 6;
-    const isAllOut = match[battingKey].wickets >= match[battingKey].players.length - 1;
-    const isOversDone = match[battingKey].balls >= maxBalls;
-    
-    let endInnings = isAllOut || isOversDone;
+    let endInnings = isAllOut || isOversDone || (match[battingKey].wickets >= match[battingKey].players.length - 1);
     if (match.currentInnings === 2 && match[battingKey].runs >= match.target) endInnings = true;
 
     if (endInnings) {
+      match.promptForNextBatsman = false;
+      match.promptForBowler = false;
       if (match.currentInnings === 1) {
         match.isInningsBreak = true; match.currentInnings = 2; match.target = match.team1.runs + 1;
         match.battingTeamId = match.team2.id; match.bowlingTeamId = match.team1.id;
