@@ -254,7 +254,10 @@ const TournamentManager = () => {
               {selectedMatch.team1.players.filter(p => p.matchBalls > 0 || p.matchRuns > 0 || p.isOut || (selectedMatch.currentInnings === 1 && (p.id === selectedMatch.strikerId || p.id === selectedMatch.nonStrikerId))).map(p => (
                 <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                   <span>{p.name} {p.isOut ? '' : (selectedMatch.currentInnings === 1 && (p.id === selectedMatch.strikerId || p.id === selectedMatch.nonStrikerId) ? '*' : '')}</span>
-                  <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({p.matchBalls})</span></span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({p.matchBalls})</span></span>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>SR: {p.matchBalls > 0 ? ((p.matchRuns / p.matchBalls) * 100).toFixed(2) : '0.00'}</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -264,7 +267,10 @@ const TournamentManager = () => {
               {selectedMatch.team2.players.filter(p => p.matchBallsBowled > 0).map(p => (
                 <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                   <span>{p.name}</span>
-                  <span style={{ fontWeight: 600 }}>{p.matchWickets}-{p.matchRunsConceded} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({Math.floor(p.matchBallsBowled/6)}.{p.matchBallsBowled%6})</span></span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <span style={{ fontWeight: 600 }}>{p.matchWickets}-{p.matchRunsConceded} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({Math.floor(p.matchBallsBowled/6)}.{p.matchBallsBowled%6})</span></span>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Econ: {p.matchBallsBowled > 0 ? (p.matchRunsConceded / (p.matchBallsBowled / 6)).toFixed(2) : '0.00'}</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -283,7 +289,10 @@ const TournamentManager = () => {
                 {selectedMatch.team2.players.filter(p => p.matchBalls > 0 || p.matchRuns > 0 || p.isOut || p.id === selectedMatch.strikerId || p.id === selectedMatch.nonStrikerId).map(p => (
                   <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                     <span>{p.name} {p.isOut ? '' : (p.id === selectedMatch.strikerId || p.id === selectedMatch.nonStrikerId ? '*' : '')}</span>
-                    <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({p.matchBalls})</span></span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                      <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({p.matchBalls})</span></span>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>SR: {p.matchBalls > 0 ? ((p.matchRuns / p.matchBalls) * 100).toFixed(2) : '0.00'}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -293,7 +302,10 @@ const TournamentManager = () => {
                 {selectedMatch.team1.players.filter(p => p.matchBallsBowled > 0).map(p => (
                   <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                     <span>{p.name}</span>
-                    <span style={{ fontWeight: 600 }}>{p.matchWickets}-{p.matchRunsConceded} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({Math.floor(p.matchBallsBowled/6)}.{p.matchBallsBowled%6})</span></span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                      <span style={{ fontWeight: 600 }}>{p.matchWickets}-{p.matchRunsConceded} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({Math.floor(p.matchBallsBowled/6)}.{p.matchBallsBowled%6})</span></span>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Econ: {p.matchBallsBowled > 0 ? (p.matchRunsConceded / (p.matchBallsBowled / 6)).toFixed(2) : '0.00'}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -585,7 +597,10 @@ const TournamentManager = () => {
                         <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>#{i + 1}</span>
                         <span style={{ fontWeight: i === 0 ? 700 : 500 }}>{p.name}</span>
                       </div>
-                      <div style={{ fontWeight: 700 }}>{p.totalRuns} <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-secondary)' }}>runs</span></div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: 700 }}>{p.totalRuns} <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-secondary)' }}>runs</span></div>
+                        <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>SR: {p.totalBalls > 0 ? ((p.totalRuns / p.totalBalls) * 100).toFixed(2) : '0.00'}</div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -600,7 +615,10 @@ const TournamentManager = () => {
                         <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>#{i + 1}</span>
                         <span style={{ fontWeight: i === 0 ? 700 : 500 }}>{p.name}</span>
                       </div>
-                      <div style={{ fontWeight: 700 }}>{p.totalWickets} <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-secondary)' }}>wkts</span></div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: 700 }}>{p.totalWickets} <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-secondary)' }}>wkts</span></div>
+                        <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Econ: {p.totalBallsBowled > 0 ? (p.totalRunsConceded / (p.totalBallsBowled / 6)).toFixed(2) : '0.00'}</div>
+                      </div>
                     </div>
                   ))}
                 </div>
