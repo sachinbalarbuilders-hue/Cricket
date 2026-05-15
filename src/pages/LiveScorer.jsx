@@ -551,6 +551,16 @@ const LiveScorer = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
                 <User size={14} /> {nonStriker.name}
+                {isAuthorized && (
+                  retireConfirmId === nonStriker.id ? (
+                    <div style={{ display: 'flex', gap: '3px' }}>
+                      <button onClick={() => { retireBatter(nonStriker.id); setRetireConfirmId(null); }} style={{ background: 'var(--accent-danger)', border: 'none', color: 'white', fontSize: '0.55rem', padding: '1px 5px', borderRadius: '3px' }}>Out</button>
+                      <button onClick={() => setRetireConfirmId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-secondary)', fontSize: '0.55rem', padding: '1px 5px', borderRadius: '3px' }}>No</button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setRetireConfirmId(nonStriker.id)} style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-secondary)', fontSize: '0.55rem', padding: '1px 5px', borderRadius: '3px' }}>Injury</button>
+                  )
+                )}
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontWeight: 600, fontSize: '0.8125rem' }}>{nonStriker.matchRuns} <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({nonStriker.matchBalls})</span></div>
