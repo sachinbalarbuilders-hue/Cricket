@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { useCricket } from '../context/CricketContext';
-import { Trophy, User, LogIn } from 'lucide-react';
+import { Trophy, Phone, Lock, LogIn } from 'lucide-react';
 
 const Login = () => {
   const { login } = useCricket();
-  const [name, setName] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (name.trim()) {
-      login(name.trim());
+    if (mobile.length >= 10 && password) {
+      login(mobile, password);
+    } else {
+      alert("Please enter a valid mobile number and password.");
     }
   };
 
@@ -24,32 +27,46 @@ const Login = () => {
           <Trophy size={40} color="var(--accent-primary)" />
         </div>
         
-        <h1 style={{ fontSize: '1.75rem', marginBottom: '8px' }}>Cricket Organizer</h1>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Enter your name to start managing tournaments</p>
+        <h1 style={{ fontSize: '1.75rem', marginBottom: '8px' }}>Organizer Login</h1>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Enter credentials to manage tournaments</p>
         
         <form onSubmit={handleSubmit}>
-          <div className="input-group" style={{ textAlign: 'left' }}>
+          <div className="input-group" style={{ textAlign: 'left', marginBottom: '20px' }}>
             <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <User size={14} /> Organizer Name
+              <Phone size={14} /> Mobile Number
             </label>
             <input 
-              type="text" 
+              type="tel" 
               className="input-field" 
-              placeholder="e.g. Sachin Balar"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. 9876543210"
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
               required
               autoFocus
             />
           </div>
+
+          <div className="input-group" style={{ textAlign: 'left', marginBottom: '24px' }}>
+            <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Lock size={14} /> Password
+            </label>
+            <input 
+              type="password" 
+              className="input-field" 
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
           
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-            <LogIn size={20} /> Get Started
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <LogIn size={20} /> Login / Sign Up
           </button>
         </form>
         
         <p style={{ marginTop: '32px', fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.5 }}>
-          Your session will be saved locally for quick access.
+          New users will be registered automatically on first login.
         </p>
       </div>
     </div>

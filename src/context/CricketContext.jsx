@@ -99,10 +99,24 @@ export const CricketProvider = ({ children }) => {
     localStorage.removeItem('isAuthorized');
   };
 
-  const login = (name) => {
-    const user = { name, loggedInAt: new Date().toISOString() };
+  const login = (mobile, password) => {
+    const users = JSON.parse(localStorage.getItem('cricket_users') || '[]');
+    let user = users.find(u => u.mobile === mobile);
+    
+    if (user) {
+      if (user.password !== password) {
+        alert("Incorrect password!");
+        return false;
+      }
+    } else {
+      user = { mobile, password, name: `Organizer ${mobile.slice(-4)}`, loggedInAt: new Date().toISOString() };
+      users.push(user);
+      localStorage.setItem('cricket_users', JSON.stringify(users));
+    }
+
     setCurrentUser(user);
     localStorage.setItem('currentUser', JSON.stringify(user));
+    return true;
   };
 
   const logout = () => {
