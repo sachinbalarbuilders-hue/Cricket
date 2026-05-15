@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useCricket } from '../context/CricketContext';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, XCircle, User, ArrowLeftRight, Trophy, RefreshCcw } from 'lucide-react';
+import { CheckCircle, XCircle, User, ArrowLeftRight, Trophy, RefreshCcw, Undo } from 'lucide-react';
 
 const LiveScorer = () => {
   const { 
     activeMatch, scoreBall, endMatchAndSave, cancelActiveMatch,
     setOpeningPlayers, setNextBatsman, setNextBowler, retireBatter, endInningsBreak, swapStrike, changeBowler, 
-    isSyncing, isAuthorized, authorize, deauthorize
+    isSyncing, isAuthorized, authorize, deauthorize, undoLastAction
   } = useCricket();
   const navigate = useNavigate();
   const [pinInput, setPinInput] = useState('');
@@ -23,6 +23,7 @@ const LiveScorer = () => {
   const [wFielder, setWFielder] = useState('');
   const [wOutPlayerId, setWOutPlayerId] = useState('');
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [retireConfirmId, setRetireConfirmId] = useState(null);
 
   const getMatchAwards = (match) => {
     const allPlayers = [...match.team1.players, ...match.team2.players];
@@ -73,6 +74,62 @@ const LiveScorer = () => {
   const bowlingTeam = isBattingFirst ? activeMatch.team2 : activeMatch.team1;
 
   // Prompts Handling
+  if (activeMatch.isInningsBreak) {
+    return (
+      <div className="page-container" style={{ textAlign: 'center' }}>
+        <h1 style={{ color: 'var(--accent-primary)', margin: '40px 0 20px', fontSize: '2rem' }}>Innings Break</h1>
+        
+        <div className="glass-panel" style={{ padding: '24px', marginBottom: '40px' }}>
+          <h3 style={{ marginBottom: '12px' }}>{activeMatch.team1.name}</h3>
+          <p style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '8px' }}>
+            {activeMatch.team1.runs}/{activeMatch.team1.wickets}
+          </p>
+          <p style={{ color: 'var(--text-secondary)' }}>
+            Overs: {Math.floor(activeMatch.team1.balls / 6)}.{activeMatch.team1.balls % 6} / {activeMatch.overs}
+          </p>
+        </div>
+        
+        <h3 style={{ marginBottom: '24px' }}>Target: {activeMatch.target} runs</h3>
+
+        <div className="glass-panel" style={{ padding: '20px', marginBottom: '40px' }}>
+          <h3 style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', marginBottom: '16px', textAlign: 'left', fontSize: '1rem', color: 'var(--text-secondary)' }}>
+            {activeMatch.team1.name} Batting
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px', textAlign: 'left' }}>
+            {activeMatch.team1.players.filter(p => p.matchBalls > 0 || p.matchRuns > 0 || p.isOut || p.id === activeMatch.strikerId || p.id === activeMatch.nonStrikerId).map(p => (
+              <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                <span>{p.name} {p.isOut ? '' : '*'}</span>
+                <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({p.matchBalls})</span></span>
+              </div>
+            ))}
+          </div>
+
+          <h3 style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', marginBottom: '16px', textAlign: 'left', fontSize: '1rem', color: 'var(--text-secondary)' }}>
+            {activeMatch.team2.name} Bowling
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
+            {activeMatch.team2.players.filter(p => p.matchBallsBowled > 0).map(p => (
+              <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                <span>{p.name}</span>
+                <span style={{ fontWeight: 600 }}>
+                  {p.matchWickets}-{p.matchRunsConceded} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({Math.floor(p.matchBallsBowled/6)}.{p.matchBallsBowled%6})</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <button 
+          className="btn btn-primary" 
+          style={{ width: '100%' }}
+          onClick={() => endInningsBreak()}
+        >
+          <CheckCircle size={20} /> Start Innings 2
+        </button>
+      </div>
+    );
+  }
+
   if (activeMatch.promptForBatsmen || activeMatch.promptForBowler) {
     const handleSetOpeners = (e) => {
       e.preventDefault();
@@ -170,61 +227,6 @@ const LiveScorer = () => {
     );
   }
 
-  if (activeMatch.isInningsBreak) {
-    return (
-      <div className="page-container" style={{ textAlign: 'center' }}>
-        <h1 style={{ color: 'var(--accent-primary)', margin: '40px 0 20px', fontSize: '2rem' }}>Innings Break</h1>
-        
-        <div className="glass-panel" style={{ padding: '24px', marginBottom: '40px' }}>
-          <h3 style={{ marginBottom: '12px' }}>{activeMatch.team1.name}</h3>
-          <p style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '8px' }}>
-            {activeMatch.team1.runs}/{activeMatch.team1.wickets}
-          </p>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            Overs: {Math.floor(activeMatch.team1.balls / 6)}.{activeMatch.team1.balls % 6} / {activeMatch.overs}
-          </p>
-        </div>
-        
-        <h3 style={{ marginBottom: '24px' }}>Target: {activeMatch.target} runs</h3>
-
-        <div className="glass-panel" style={{ padding: '20px', marginBottom: '40px' }}>
-          <h3 style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', marginBottom: '16px', textAlign: 'left', fontSize: '1rem', color: 'var(--text-secondary)' }}>
-            {activeMatch.team1.name} Batting
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px', textAlign: 'left' }}>
-            {activeMatch.team1.players.filter(p => p.matchBalls > 0 || p.matchRuns > 0 || p.isOut || p.id === activeMatch.strikerId || p.id === activeMatch.nonStrikerId).map(p => (
-              <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                <span>{p.name} {p.isOut ? '' : '*'}</span>
-                <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({p.matchBalls})</span></span>
-              </div>
-            ))}
-          </div>
-
-          <h3 style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', marginBottom: '16px', textAlign: 'left', fontSize: '1rem', color: 'var(--text-secondary)' }}>
-            {activeMatch.team2.name} Bowling
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
-            {activeMatch.team2.players.filter(p => p.matchBallsBowled > 0).map(p => (
-              <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                <span>{p.name}</span>
-                <span style={{ fontWeight: 600 }}>
-                  {p.matchWickets}-{p.matchRunsConceded} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({Math.floor(p.matchBallsBowled/6)}.{p.matchBallsBowled%6})</span>
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <button 
-          className="btn btn-primary" 
-          style={{ width: '100%' }}
-          onClick={() => endInningsBreak()}
-        >
-          <CheckCircle size={20} /> Start Innings 2
-        </button>
-      </div>
-    );
-  }
 
   // Active Scoring UI variables
   const oversBowled = Math.floor(battingTeam.balls / 6);
@@ -290,7 +292,10 @@ const LiveScorer = () => {
                   {p.isOut && <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>{p.dismissal}</span>}
                   {!p.isOut && activeMatch.currentInnings === 1 && (p.id === activeMatch.strikerId || p.id === activeMatch.nonStrikerId) && <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)' }}>not out</span>}
                 </div>
-                <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({p.matchBalls})</span></span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({p.matchBalls})</span></span>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>SR: {p.matchBalls > 0 ? ((p.matchRuns / p.matchBalls) * 100).toFixed(2) : '0.00'}</span>
+                </div>
               </div>
             ))}
           </div>
@@ -300,7 +305,10 @@ const LiveScorer = () => {
             {activeMatch.team2.players.filter(p => p.matchBallsBowled > 0).map(p => (
               <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                 <span>{p.name}</span>
-                <span style={{ fontWeight: 600 }}>{p.matchWickets}-{p.matchRunsConceded} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({Math.floor(p.matchBallsBowled/6)}.{p.matchBallsBowled%6})</span></span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <span style={{ fontWeight: 600 }}>{p.matchWickets}-{p.matchRunsConceded} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({Math.floor(p.matchBallsBowled/6)}.{p.matchBallsBowled%6})</span></span>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Econ: {p.matchBallsBowled > 0 ? (p.matchRunsConceded / (p.matchBallsBowled / 6)).toFixed(2) : '0.00'}</span>
+                </div>
               </div>
             ))}
           </div>
@@ -323,7 +331,10 @@ const LiveScorer = () => {
                     {p.isOut && <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>{p.dismissal}</span>}
                     {!p.isOut && (p.id === activeMatch.strikerId || p.id === activeMatch.nonStrikerId) && <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)' }}>not out</span>}
                   </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                   <span style={{ fontWeight: 600 }}>{p.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({p.matchBalls})</span></span>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>SR: {p.matchBalls > 0 ? ((p.matchRuns / p.matchBalls) * 100).toFixed(2) : '0.00'}</span>
+                </div>
                 </div>
               ))}
             </div>
@@ -333,7 +344,10 @@ const LiveScorer = () => {
               {activeMatch.team1.players.filter(p => p.matchBallsBowled > 0).map(p => (
                 <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                   <span>{p.name}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                   <span style={{ fontWeight: 600 }}>{p.matchWickets}-{p.matchRunsConceded} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({Math.floor(p.matchBallsBowled/6)}.{p.matchBallsBowled%6})</span></span>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Econ: {p.matchBallsBowled > 0 ? (p.matchRunsConceded / (p.matchBallsBowled / 6)).toFixed(2) : '0.00'}</span>
+                </div>
                 </div>
               ))}
             </div>
@@ -499,6 +513,16 @@ const LiveScorer = () => {
         >
           View Full Scorecard
         </button>
+        {activeMatch.undoStack && activeMatch.undoStack.length > 0 && (
+          <button 
+            className="btn btn-outline" 
+            style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', color: '#ffd700' }}
+            onClick={undoLastAction}
+            title="Undo Last Ball"
+          >
+            <Undo size={18} />
+          </button>
+        )}
         <button 
           className="btn btn-outline" 
           style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', color: 'var(--accent-danger)' }}
@@ -528,15 +552,35 @@ const LiveScorer = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-primary)', fontWeight: 600 }}>
                 <User size={16} /> {striker.name} *
                 {isAuthorized && (
-                  <button 
-                    onClick={() => { if(window.confirm(`${striker.name} is injured/retired hurt?`)) retireBatter(striker.id); }}
-                    style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--accent-danger)', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
-                  >
-                    Injured
-                  </button>
+                  retireConfirmId === striker.id ? (
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button 
+                        onClick={() => { retireBatter(striker.id); setRetireConfirmId(null); }}
+                        style={{ background: 'var(--accent-danger)', border: 'none', color: 'white', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
+                      >
+                        Confirm?
+                      </button>
+                      <button 
+                        onClick={() => setRetireConfirmId(null)}
+                        style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-secondary)', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => setRetireConfirmId(striker.id)}
+                      style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--accent-danger)', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                      Injured
+                    </button>
+                  )
                 )}
               </div>
-              <div style={{ fontWeight: 600 }}>{striker.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({striker.matchBalls})</span></div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <div style={{ fontWeight: 600 }}>{striker.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({striker.matchBalls})</span></div>
+                <div style={{ fontSize: '0.65rem', color: 'var(--accent-primary)', fontWeight: 600 }}>SR: {striker.matchBalls > 0 ? ((striker.matchRuns / striker.matchBalls) * 100).toFixed(2) : '0.00'}</div>
+              </div>
             </div>
           )}
           {nonStriker && (
@@ -544,15 +588,35 @@ const LiveScorer = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
                 <User size={16} /> {nonStriker.name}
                 {isAuthorized && (
-                  <button 
-                    onClick={() => { if(window.confirm(`${nonStriker.name} is injured/retired hurt?`)) retireBatter(nonStriker.id); }}
-                    style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-secondary)', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
-                  >
-                    Injured
-                  </button>
+                  retireConfirmId === nonStriker.id ? (
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button 
+                        onClick={() => { retireBatter(nonStriker.id); setRetireConfirmId(null); }}
+                        style={{ background: 'var(--accent-danger)', border: 'none', color: 'white', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
+                      >
+                        Confirm?
+                      </button>
+                      <button 
+                        onClick={() => setRetireConfirmId(null)}
+                        style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-secondary)', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => setRetireConfirmId(nonStriker.id)}
+                      style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-secondary)', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                      Injured
+                    </button>
+                  )
                 )}
               </div>
-              <div>{nonStriker.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>({nonStriker.matchBalls})</span></div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <div style={{ fontWeight: 600 }}>{nonStriker.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({nonStriker.matchBalls})</span></div>
+                <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>SR: {nonStriker.matchBalls > 0 ? ((nonStriker.matchRuns / nonStriker.matchBalls) * 100).toFixed(2) : '0.00'}</div>
+              </div>
             </div>
           )}
         </div>
@@ -566,8 +630,13 @@ const LiveScorer = () => {
                 {bowler.name}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ fontWeight: 600 }}>
-                  {bowler.matchWickets}-{bowler.matchRunsConceded} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({Math.floor(bowler.matchBallsBowled/6)}.{bowler.matchBallsBowled%6})</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <div style={{ fontWeight: 600 }}>
+                    {bowler.matchWickets}-{bowler.matchRunsConceded} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({Math.floor(bowler.matchBallsBowled/6)}.{bowler.matchBallsBowled%6})</span>
+                  </div>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--accent-secondary)', fontWeight: 600 }}>
+                    Econ: {bowler.matchBallsBowled > 0 ? (bowler.matchRunsConceded / (bowler.matchBallsBowled / 6)).toFixed(2) : '0.00'}
+                  </div>
                 </div>
                 <button 
                   className="btn btn-outline" 
@@ -641,17 +710,33 @@ const LiveScorer = () => {
         <div>
           <h3 style={{ marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Runs</h3>
           {activeExtra && (
-            <p style={{ color: 'var(--accent-primary)', fontSize: '0.875rem', marginBottom: '12px', fontWeight: 600 }}>
-              Scoring as: {activeExtra === 'bye' ? 'Byes' : 'Leg Byes'}
-            </p>
+            <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(56, 189, 248, 0.1)', borderRadius: '8px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+              <p style={{ color: 'var(--accent-primary)', fontSize: '0.875rem', fontWeight: 600 }}>
+                Scoring as: {activeExtra === 'bye' ? 'Byes' : activeExtra === 'lb' ? 'Leg Byes' : activeExtra === 'wd' ? 'Wide (+1 run)' : 'No Ball (+1 run)'}
+              </p>
+              {(activeExtra === 'wd' || activeExtra === 'nb') && (
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  Click additional runs off the bat/byes. Click <strong>0</strong> for a standard {activeExtra === 'wd' ? 'Wide' : 'No Ball'}.
+                </p>
+              )}
+            </div>
           )}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
-            <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem' }} onClick={() => handleScore(0)}>0</button>
-            <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem' }} onClick={() => handleScore(1)}>1</button>
-            <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem' }} onClick={() => handleScore(2)}>2</button>
-            <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem' }} onClick={() => handleScore(3)}>3</button>
-            <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem', borderColor: 'var(--accent-secondary)', color: 'var(--accent-secondary)' }} onClick={() => handleScore(4)}>4</button>
-            <button className="btn btn-outline" style={{ height: '64px', fontSize: '1.25rem', borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)' }} onClick={() => handleScore(6)}>6</button>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '24px' }}>
+            {[0, 1, 2, 3, 4, 5, 6, 7].map(num => (
+              <button 
+                key={num}
+                className="btn btn-outline" 
+                style={{ 
+                  height: '56px', 
+                  fontSize: '1.25rem',
+                  borderColor: num === 4 ? 'var(--accent-secondary)' : num === 6 ? 'var(--accent-primary)' : 'rgba(255,255,255,0.1)',
+                  color: num === 4 ? 'var(--accent-secondary)' : num === 6 ? 'var(--accent-primary)' : 'inherit'
+                }} 
+                onClick={() => handleScore(num)}
+              >
+                {num}
+              </button>
+            ))}
           </div>
 
           <h3 style={{ marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Extras & Wickets</h3>
@@ -672,8 +757,16 @@ const LiveScorer = () => {
             </button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
-            <button className="btn btn-outline" style={{ height: '56px' }} onClick={() => handleExtra('wd')}>Wide</button>
-            <button className="btn btn-outline" style={{ height: '56px' }} onClick={() => handleExtra('nb')}>No Ball</button>
+            <button 
+              className={`btn ${activeExtra === 'wd' ? 'btn-primary' : 'btn-outline'}`} 
+              style={{ height: '56px' }} 
+              onClick={() => setActiveExtra(prev => prev === 'wd' ? null : 'wd')}
+            >Wide</button>
+            <button 
+              className={`btn ${activeExtra === 'nb' ? 'btn-primary' : 'btn-outline'}`} 
+              style={{ height: '56px' }} 
+              onClick={() => setActiveExtra(prev => prev === 'nb' ? null : 'nb')}
+            >No Ball</button>
             <button className="btn btn-danger" style={{ gridColumn: 'span 2', height: '64px', fontSize: '1.25rem', textTransform: 'uppercase', letterSpacing: '2px' }} onClick={handleWicket}>
               Wicket
             </button>
@@ -753,14 +846,19 @@ const LiveScorer = () => {
             {(wType === 'Caught' || wType === 'Run Out' || wType === 'Stumped') && (
               <div className="input-group">
                 <label className="input-label">Fielder Name</label>
-                <input 
-                  type="text" 
+                <select 
                   className="input-field" 
-                  placeholder="e.g. Rahul" 
                   value={wFielder}
                   onChange={e => setWFielder(e.target.value)}
                   style={{ background: 'var(--bg-secondary)' }}
-                />
+                >
+                  <option value="">Select Fielder</option>
+                  {bowlingTeam.players.map(p => (
+                    <option key={p.id} value={p.name}>{p.name}</option>
+                  ))}
+                  <option value="Direct Hit">Direct Hit</option>
+                  <option value="Sub Fielder">Sub Fielder</option>
+                </select>
               </div>
             )}
 

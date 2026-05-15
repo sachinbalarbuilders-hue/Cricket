@@ -233,12 +233,17 @@ export const CricketProvider = ({ children }) => {
   };
 
   const setNextBowler = (bowlerId) => {
-    setActiveMatch(prev => ({
-      ...prev,
-      currentBowlerId: bowlerId,
-      promptForBowler: false,
-      currentOverHistory: [] // Reset history for new over
-    }));
+    setActiveMatch(prev => {
+      const battingKey = prev.currentInnings === 1 ? 'team1' : 'team2';
+      const isMidOver = prev[battingKey].balls % 6 !== 0;
+      
+      return {
+        ...prev,
+        currentBowlerId: bowlerId,
+        promptForBowler: false,
+        currentOverHistory: isMidOver ? prev.currentOverHistory : [] // Only clear if starting a brand new over
+      };
+    });
   };
 
   const retireBatter = async (playerId) => {
@@ -279,13 +284,32 @@ export const CricketProvider = ({ children }) => {
     await syncActiveMatch(match);
   };
 
+  const undoLastAction = async () => {
+    if (!activeMatch || !activeMatch.undoStack || activeMatch.undoStack.length === 0) return;
+    const match = JSON.parse(JSON.stringify(activeMatch));
+    const previousStateString = match.undoStack.pop();
+    const previousState = JSON.parse(previousStateString);
+    previousState.undoStack = match.undoStack; // restore the remaining stack
+    setActiveMatch(previousState);
+    await syncActiveMatch(previousState);
+  };
+
   const scoreBall = async (runs, isWicket = false, extra = null, wicketData = null) => {
     if (!activeMatch) return;
+
+    // Save history snapshot before modifying state
+    const historyState = JSON.parse(JSON.stringify(activeMatch));
+    delete historyState.undoStack;
+    
+    const match = JSON.parse(JSON.stringify(activeMatch));
+    match.undoStack = activeMatch.undoStack || [];
+    match.undoStack.push(JSON.stringify(historyState));
+    if (match.undoStack.length > 20) match.undoStack.shift(); // Keep last 20 balls
+
     let runsScored = runs;
     let ballCounted = true;
     if (extra === 'wd' || extra === 'nb') { runsScored += 1; ballCounted = false; }
 
-    const match = JSON.parse(JSON.stringify(activeMatch));
     const battingKey = match.currentInnings === 1 ? 'team1' : 'team2';
     const bowlingKey = match.currentInnings === 1 ? 'team2' : 'team1';
     
@@ -612,7 +636,8 @@ export const CricketProvider = ({ children }) => {
       addTournament, addTeamToTournament, addPlayer, removePlayer,
       startMatch, setOpeningPlayers, setNextBatsman, setNextBowler, retireBatter,
       scoreBall, swapStrike, changeBowler, endInningsBreak,
-      endMatchAndSave, cancelActiveMatch, deleteMatch, resetTournamentStats
+      endMatchAndSave, cancelActiveMatch, deleteMatch, resetTournamentStats,
+      undoLastAction
     }}>
       {children}
     </CricketContext.Provider>
