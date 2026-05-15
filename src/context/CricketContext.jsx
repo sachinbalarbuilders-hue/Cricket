@@ -103,19 +103,34 @@ export const CricketProvider = ({ children }) => {
     const users = JSON.parse(localStorage.getItem('cricket_users') || '[]');
     let user = users.find(u => u.mobile === mobile);
     
-    if (user) {
-      if (user.password !== password) {
-        alert("Incorrect password!");
-        return false;
-      }
-    } else {
-      user = { mobile, password, name: `Organizer ${mobile.slice(-4)}`, loggedInAt: new Date().toISOString() };
-      users.push(user);
-      localStorage.setItem('cricket_users', JSON.stringify(users));
+    if (!user) {
+      alert("Mobile number not found. Please sign up first.");
+      return false;
+    }
+
+    if (user.password !== password) {
+      alert("Incorrect password!");
+      return false;
     }
 
     setCurrentUser(user);
     localStorage.setItem('currentUser', JSON.stringify(user));
+    return true;
+  };
+
+  const signup = (name, mobile, password) => {
+    const users = JSON.parse(localStorage.getItem('cricket_users') || '[]');
+    if (users.some(u => u.mobile === mobile)) {
+      alert("Mobile number already registered!");
+      return false;
+    }
+
+    const newUser = { name, mobile, password, loggedInAt: new Date().toISOString() };
+    users.push(newUser);
+    localStorage.setItem('cricket_users', JSON.stringify(users));
+    
+    setCurrentUser(newUser);
+    localStorage.setItem('currentUser', JSON.stringify(newUser));
     return true;
   };
 
