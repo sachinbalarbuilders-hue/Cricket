@@ -408,8 +408,8 @@ const LiveScorer = () => {
         <button 
           className="btn btn-primary" 
           style={{ width: '100%' }}
-          onClick={() => {
-            endMatchAndSave();
+          onClick={async () => {
+            await endMatchAndSave();
             navigate(`/tournaments/${activeMatch.tournamentId}`);
           }}
         >
@@ -695,6 +695,25 @@ const LiveScorer = () => {
           <XCircle size={16} style={{ marginRight: '4px' }} /> Cancel Match
         </button>
       </div>
+
+      {/* Bowler Selection Modal */}
+      {activeMatch.promptForBowler && !activeMatch.isComplete && !activeMatch.isInningsBreak && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '24px' }}>
+            <h2 style={{ marginBottom: '20px' }}>Select Next Bowler</h2>
+            <div className="input-group">
+              <label className="input-label">Bowler ({bowlingTeam.name})</label>
+              <select className="input-field" value={selBowler} onChange={e => setSelBowler(e.target.value)} style={{ background: 'var(--bg-secondary)' }}>
+                <option value="">Select Player</option>
+                {bowlingTeam.players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+            <button className="btn btn-primary" style={{ width: '100%', marginTop: '20px' }} onClick={() => { if(selBowler) setNextBowler(selBowler); setSelBowler(''); }}>
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Wicket Details Modal */}
       {wicketModalOpen && (
