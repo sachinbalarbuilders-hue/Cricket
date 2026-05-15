@@ -533,12 +533,12 @@ const LiveScorer = () => {
                 <User size={14} /> {striker.name} *
                 {isAuthorized && (
                   retireConfirmId === striker.id ? (
-                    <div style={{ display: 'flex', gap: '3px' }}>
-                      <button onClick={() => { retireBatter(striker.id); setRetireConfirmId(null); }} style={{ background: 'var(--accent-danger)', border: 'none', color: 'white', fontSize: '0.55rem', padding: '1px 5px', borderRadius: '3px' }}>Out</button>
-                      <button onClick={() => setRetireConfirmId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-secondary)', fontSize: '0.55rem', padding: '1px 5px', borderRadius: '3px' }}>No</button>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button onClick={() => { retireBatter(striker.id); setRetireConfirmId(null); }} style={{ background: 'var(--accent-danger)', border: 'none', color: 'white', fontSize: '0.65rem', padding: '3px 10px', borderRadius: '4px', fontWeight: 600 }}>Out</button>
+                      <button onClick={() => setRetireConfirmId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-secondary)', fontSize: '0.65rem', padding: '3px 10px', borderRadius: '4px' }}>No</button>
                     </div>
                   ) : (
-                    <button onClick={() => setRetireConfirmId(striker.id)} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.1)', color: 'var(--accent-danger)', fontSize: '0.55rem', padding: '1px 5px', borderRadius: '3px' }}>Injury</button>
+                    <button onClick={() => setRetireConfirmId(striker.id)} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.1)', color: 'var(--accent-danger)', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px' }}>Injury</button>
                   )
                 )}
               </div>
@@ -553,12 +553,12 @@ const LiveScorer = () => {
                 <User size={14} /> {nonStriker.name}
                 {isAuthorized && (
                   retireConfirmId === nonStriker.id ? (
-                    <div style={{ display: 'flex', gap: '3px' }}>
-                      <button onClick={() => { retireBatter(nonStriker.id); setRetireConfirmId(null); }} style={{ background: 'var(--accent-danger)', border: 'none', color: 'white', fontSize: '0.55rem', padding: '1px 5px', borderRadius: '3px' }}>Out</button>
-                      <button onClick={() => setRetireConfirmId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-secondary)', fontSize: '0.55rem', padding: '1px 5px', borderRadius: '3px' }}>No</button>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button onClick={() => { retireBatter(nonStriker.id); setRetireConfirmId(null); }} style={{ background: 'var(--accent-danger)', border: 'none', color: 'white', fontSize: '0.65rem', padding: '3px 10px', borderRadius: '4px', fontWeight: 600 }}>Out</button>
+                      <button onClick={() => setRetireConfirmId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-secondary)', fontSize: '0.65rem', padding: '3px 10px', borderRadius: '4px' }}>No</button>
                     </div>
                   ) : (
-                    <button onClick={() => setRetireConfirmId(nonStriker.id)} style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-secondary)', fontSize: '0.55rem', padding: '1px 5px', borderRadius: '3px' }}>Injury</button>
+                    <button onClick={() => setRetireConfirmId(nonStriker.id)} style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-secondary)', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px' }}>Injury</button>
                   )
                 )}
               </div>
