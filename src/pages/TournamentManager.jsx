@@ -60,6 +60,8 @@ const TournamentManager = () => {
   const [deletingMatchId, setDeletingMatchId] = useState(null);
   
   const tournament = tournaments.find(t => t.id === id);
+  const { currentUser } = useCricket();
+  const isOwner = currentUser && tournament && currentUser.mobile === tournament.organizerMobile;
   
   const [newTeamName, setNewTeamName] = useState('');
   const [playerInputs, setPlayerInputs] = useState({});
@@ -199,9 +201,21 @@ const TournamentManager = () => {
           <ArrowLeft size={24} />
         </button>
         <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{tournament.name}</div>
-            <span style={{ fontSize: '0.65rem', color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, textTransform: 'uppercase' }}>Organizer: {tournament.organizer || 'Admin'}</span>
+            <span style={{ 
+              fontSize: '0.65rem', color: isOwner ? 'var(--accent-primary)' : 'var(--text-secondary)', 
+              border: '1px solid', borderColor: isOwner ? 'var(--accent-primary)' : 'rgba(255,255,255,0.1)', 
+              padding: '1px 6px', borderRadius: '4px', fontWeight: 600, textTransform: 'uppercase',
+              background: isOwner ? 'rgba(255, 215, 0, 0.05)' : 'rgba(255,255,255,0.02)'
+            }}>
+              {isOwner ? `My Tournament` : `By ${tournament.organizer || 'Admin'}`}
+            </span>
+            {!isOwner && (
+              <span style={{ fontSize: '0.65rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--accent-danger)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                SPECTATOR MODE
+              </span>
+            )}
           </div>
           {isSyncing && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--accent-primary)', marginTop: '2px', fontWeight: 400 }}>
@@ -320,10 +334,10 @@ const TournamentManager = () => {
       <div className="tab-bar">
         {[
           { key: 'points',      label: 'Table'    },
-          { key: 'teams',       label: 'Teams'    },
+          ...(isOwner ? [{ key: 'teams', label: 'Teams' }] : []),
           { key: 'history',     label: 'History'  },
           { key: 'leaderboard', label: 'Leaders'  },
-          { key: 'match',       label: '+ Match'  },
+          ...(isOwner ? [{ key: 'match', label: '+ Match' }] : []),
         ].map(tab => (
           <button
             key={tab.key}
