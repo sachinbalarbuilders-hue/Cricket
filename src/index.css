@@ -112,16 +112,16 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 24px;
+  padding: 10px 20px;
   border-radius: var(--border-radius);
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   letter-spacing: 0.01em;
   border: none;
   cursor: pointer;
   transition: var(--transition);
   font-family: var(--font-main);
-  min-height: 52px;       /* touch target */
+  min-height: 44px;       /* optimized touch target */
   min-width: 44px;
   user-select: none;
   -webkit-user-select: none;
@@ -254,7 +254,7 @@ h1, h2, h3, h4 {
 
 /* ── Page Layout ──────────────────── */
 .page-container {
-  padding: 20px 16px 100px;
+  padding: 12px 12px 80px;
   min-height: 100vh;
 }
 

@@ -462,219 +462,130 @@ const LiveScorer = () => {
           )}
         </div>
         
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '8px' }}>
-          {battingTeam.name} Batting
-        </p>
-        
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '8px', marginBottom: '8px' }}>
-          <span style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1 }}>{battingTeam.runs}</span>
-          <span style={{ fontSize: '1.5rem', color: 'var(--text-secondary)' }}>-</span>
-          <span style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--accent-danger)' }}>{battingTeam.wickets}</span>
-        </div>
-        
-        <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '16px' }}>
-          Overs: {oversBowled}.{ballsInOver} <span style={{ fontSize: '0.875rem', fontWeight: 400 }}>/ {activeMatch.overs}</span>
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '16px', marginBottom: activeMatch.currentInnings === 2 ? '12px' : 0 }}>
-          <div>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>CRR</p>
-            <p style={{ fontWeight: 600 }}>{currentRunRate}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800 }}>
+            {battingTeam.runs}/{battingTeam.wickets}
+            <span style={{ fontSize: '0.875rem', fontWeight: 400, color: 'var(--text-secondary)', marginLeft: '8px' }}>
+              ({oversBowled}.{ballsInOver} / {activeMatch.overs})
+            </span>
           </div>
-          {activeMatch.currentInnings === 2 && (
-            <>
-              <div>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Target</p>
-                <p style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>{activeMatch.target}</p>
-              </div>
-              <div>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>RRR</p>
-                <p style={{ fontWeight: 600 }}>{requiredRunRate}</p>
-              </div>
-            </>
-          )}
+          <div style={{ textAlign: 'right', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            CRR: <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{currentRunRate}</span>
+            {activeMatch.currentInnings === 2 && <> | RRR: <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{requiredRunRate}</span></>}
+          </div>
         </div>
 
         {activeMatch.currentInnings === 2 && (
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px', fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+          <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '4px' }}>
             {activeMatch.target - battingTeam.runs > 0 ? (
               <>Need {activeMatch.target - battingTeam.runs} runs from {(activeMatch.overs * 6) - battingTeam.balls} balls</>
             ) : (
               <span style={{ color: '#ffd700' }}>Target Reached! Leading by {battingTeam.runs - (activeMatch.target - 1)} runs</span>
             )}
-            {activeMatch.isCompulsoryChase && (
-              <div style={{ fontSize: '0.7rem', color: '#ffd700', marginTop: '4px', fontWeight: 500 }}>
-                ★ Compulsory Chase: Full overs or All Out required
-              </div>
-            )}
           </div>
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
         <button 
           className="btn btn-outline" 
-          style={{ flex: 1, fontSize: '0.875rem', padding: '8px', background: 'rgba(255,255,255,0.03)' }}
+          style={{ flex: 1, fontSize: '0.75rem', padding: '6px', background: 'rgba(255,255,255,0.03)' }}
           onClick={() => setShowScorecardModal(true)}
         >
-          View Full Scorecard
+          Scorecard
         </button>
         {activeMatch.undoStack && activeMatch.undoStack.length > 0 && (
           <button 
             className="btn btn-outline" 
-            style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', color: '#ffd700' }}
+            style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.03)', color: '#ffd700' }}
             onClick={undoLastAction}
             title="Undo Last Ball"
           >
-            <Undo size={18} />
+            <Undo size={16} /> <span style={{fontSize: '0.75rem', marginLeft: '4px'}}>Undo</span>
           </button>
         )}
         <button 
           className="btn btn-outline" 
-          style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', color: 'var(--accent-danger)' }}
+          style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.03)', color: 'var(--accent-danger)' }}
           onClick={() => { deauthorize(); navigate('/'); }}
           title="Lock Scoring"
         >
-          <XCircle size={18} />
+          <XCircle size={16} />
         </button>
       </div>
 
       {/* Players Dashboard */}
-      <div className="glass-panel" style={{ padding: '16px', marginBottom: '24px', position: 'relative' }}>
-        
+      <div className="glass-panel" style={{ padding: '10px 12px', marginBottom: '12px', position: 'relative' }}>
         <button 
           className="btn btn-outline" 
-          style={{ position: 'absolute', top: '16px', right: '16px', padding: '6px', borderRadius: '50%' }}
+          style={{ position: 'absolute', top: '10px', right: '10px', padding: '4px', borderRadius: '50%' }}
           onClick={swapStrike}
           title="Swap Strike"
         >
-          <ArrowLeftRight size={16} />
+          <ArrowLeftRight size={14} />
         </button>
 
         {/* Batsmen */}
-        <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingRight: '40px' }}>
+        <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingRight: '36px' }}>
           {striker && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-primary)', fontWeight: 600 }}>
-                <User size={16} /> {striker.name} *
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent-primary)', fontWeight: 600, fontSize: '0.8125rem' }}>
+                <User size={14} /> {striker.name} *
                 {isAuthorized && (
                   retireConfirmId === striker.id ? (
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <button 
-                        onClick={() => { retireBatter(striker.id); setRetireConfirmId(null); }}
-                        style={{ background: 'var(--accent-danger)', border: 'none', color: 'white', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
-                      >
-                        Confirm?
-                      </button>
-                      <button 
-                        onClick={() => setRetireConfirmId(null)}
-                        style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-secondary)', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer' }}
-                      >
-                        Cancel
-                      </button>
+                    <div style={{ display: 'flex', gap: '3px' }}>
+                      <button onClick={() => { retireBatter(striker.id); setRetireConfirmId(null); }} style={{ background: 'var(--accent-danger)', border: 'none', color: 'white', fontSize: '0.55rem', padding: '1px 5px', borderRadius: '3px' }}>Out</button>
+                      <button onClick={() => setRetireConfirmId(null)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-secondary)', fontSize: '0.55rem', padding: '1px 5px', borderRadius: '3px' }}>No</button>
                     </div>
                   ) : (
-                    <button 
-                      onClick={() => setRetireConfirmId(striker.id)}
-                      style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--accent-danger)', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
-                    >
-                      Injured
-                    </button>
+                    <button onClick={() => setRetireConfirmId(striker.id)} style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.1)', color: 'var(--accent-danger)', fontSize: '0.55rem', padding: '1px 5px', borderRadius: '3px' }}>Injury</button>
                   )
                 )}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                <div style={{ fontWeight: 600 }}>{striker.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({striker.matchBalls})</span></div>
-                <div style={{ fontSize: '0.65rem', color: 'var(--accent-primary)', fontWeight: 600 }}>SR: {striker.matchBalls > 0 ? ((striker.matchRuns / striker.matchBalls) * 100).toFixed(2) : '0.00'}</div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.8125rem' }}>{striker.matchRuns} <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({striker.matchBalls})</span></div>
               </div>
             </div>
           )}
           {nonStriker && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
-                <User size={16} /> {nonStriker.name}
-                {isAuthorized && (
-                  retireConfirmId === nonStriker.id ? (
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <button 
-                        onClick={() => { retireBatter(nonStriker.id); setRetireConfirmId(null); }}
-                        style={{ background: 'var(--accent-danger)', border: 'none', color: 'white', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
-                      >
-                        Confirm?
-                      </button>
-                      <button 
-                        onClick={() => setRetireConfirmId(null)}
-                        style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-secondary)', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer' }}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      onClick={() => setRetireConfirmId(nonStriker.id)}
-                      style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-secondary)', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
-                    >
-                      Injured
-                    </button>
-                  )
-                )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                <User size={14} /> {nonStriker.name}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                <div style={{ fontWeight: 600 }}>{nonStriker.matchRuns} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({nonStriker.matchBalls})</span></div>
-                <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>SR: {nonStriker.matchBalls > 0 ? ((nonStriker.matchRuns / nonStriker.matchBalls) * 100).toFixed(2) : '0.00'}</div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 600, fontSize: '0.8125rem' }}>{nonStriker.matchRuns} <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({nonStriker.matchBalls})</span></div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Bowler */}
-        <div>
+        {/* Bowler & Partnership */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
           {bowler && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-secondary)', fontWeight: 600 }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-secondary)' }}></div>
-                {bowler.name}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  <div style={{ fontWeight: 600 }}>
-                    {bowler.matchWickets}-{bowler.matchRunsConceded} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({Math.floor(bowler.matchBallsBowled/6)}.{bowler.matchBallsBowled%6})</span>
-                  </div>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--accent-secondary)', fontWeight: 600 }}>
-                    Econ: {bowler.matchBallsBowled > 0 ? (bowler.matchRunsConceded / (bowler.matchBallsBowled / 6)).toFixed(2) : '0.00'}
-                  </div>
-                </div>
-                <button 
-                  className="btn btn-outline" 
-                  style={{ padding: '4px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)' }}
-                  onClick={changeBowler}
-                  title="Change Bowler (Injury)"
-                >
-                  <RefreshCcw size={14} />
-                </button>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-secondary)' }}></div>
+              <span style={{ fontWeight: 600 }}>{bowler.name}</span>
+              <span style={{ color: 'var(--text-secondary)' }}>{bowler.matchWickets}-{bowler.matchRunsConceded} ({Math.floor(bowler.matchBallsBowled/6)}.{bowler.matchBallsBowled%6})</span>
+              <button 
+                className="btn btn-outline" 
+                style={{ padding: '2px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)', marginLeft: '4px' }}
+                onClick={changeBowler}
+              >
+                <RefreshCcw size={10} />
+              </button>
             </div>
           )}
+          <div style={{ color: 'var(--text-secondary)' }}>
+            Part: <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{activeMatch.partnership.runs}</span> ({activeMatch.partnership.balls})
+          </div>
         </div>
       </div>
 
-      {/* Partnership Tracker */}
-      <div className="glass-panel" style={{ padding: '16px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Partnership</p>
-          <p style={{ fontSize: '1.25rem', fontWeight: 700 }}>
-            {activeMatch.partnership.runs} <span style={{ fontSize: '0.875rem', fontWeight: 400, color: 'var(--text-secondary)' }}>runs</span>
-          </p>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Balls</p>
-          <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{activeMatch.partnership.balls}</p>
-        </div>
-      </div>
+
 
       {/* Over History */}
-      <div className="glass-panel" style={{ padding: '12px 16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', overflowX: 'auto' }}>
-        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', minWidth: 'fit-content' }}>This Over:</span>
+      <div className="glass-panel" style={{ padding: '8px 12px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto' }}>
+        <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', minWidth: 'fit-content' }}>Over:</span>
         <div style={{ display: 'flex', gap: '8px' }}>
           {(activeMatch.currentOverHistory || []).map((ball, idx) => (
             <div key={idx} style={{ 
@@ -714,29 +625,25 @@ const LiveScorer = () => {
         </div>
       ) : (
         <div>
-          <h3 style={{ marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Runs</h3>
-          {activeExtra && (
-            <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(56, 189, 248, 0.1)', borderRadius: '8px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
-              <p style={{ color: 'var(--accent-primary)', fontSize: '0.875rem', fontWeight: 600 }}>
-                Scoring as: {activeExtra === 'bye' ? 'Byes' : activeExtra === 'lb' ? 'Leg Byes' : activeExtra === 'wd' ? 'Wide (+1 run)' : 'No Ball (+1 run)'}
-              </p>
-              {(activeExtra === 'wd' || activeExtra === 'nb') && (
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                  Click additional runs off the bat/byes. Click <strong>0</strong> for a standard {activeExtra === 'wd' ? 'Wide' : 'No Ball'}.
-                </p>
-              )}
-            </div>
-          )}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Runs</h3>
+            {activeExtra && (
+              <span style={{ color: 'var(--accent-primary)', fontSize: '0.75rem', fontWeight: 600 }}>
+                {activeExtra === 'bye' ? 'BYES' : activeExtra === 'lb' ? 'LEG BYES' : activeExtra === 'wd' ? 'WIDE (+1)' : 'NO BALL (+1)'}
+              </span>
+            )}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '16px' }}>
             {[0, 1, 2, 3, 4, 5, 6, 7].map(num => (
               <button 
                 key={num}
                 className="btn btn-outline" 
                 style={{ 
-                  height: '56px', 
-                  fontSize: '1.25rem',
+                  height: '44px', 
+                  fontSize: '1.1rem',
                   borderColor: num === 4 ? 'var(--accent-secondary)' : num === 6 ? 'var(--accent-primary)' : 'rgba(255,255,255,0.1)',
-                  color: num === 4 ? 'var(--accent-secondary)' : num === 6 ? 'var(--accent-primary)' : 'inherit'
+                  color: num === 4 ? 'var(--accent-secondary)' : num === 6 ? 'var(--accent-primary)' : 'inherit',
+                  background: 'rgba(255,255,255,0.02)'
                 }} 
                 onClick={() => handleScore(num)}
               >
@@ -745,38 +652,32 @@ const LiveScorer = () => {
             ))}
           </div>
 
-          <h3 style={{ marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Extras & Wickets</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+          <h3 style={{ marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Extras & Wickets</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '12px' }}>
             <button 
               className={`btn ${activeExtra === 'bye' ? 'btn-primary' : 'btn-outline'}`} 
-              style={{ height: '48px' }} 
+              style={{ height: '40px', fontSize: '0.75rem' }} 
               onClick={() => setActiveExtra(prev => prev === 'bye' ? null : 'bye')}
-            >
-              Byes
-            </button>
+            >Byes</button>
             <button 
               className={`btn ${activeExtra === 'lb' ? 'btn-primary' : 'btn-outline'}`} 
-              style={{ height: '48px' }} 
+              style={{ height: '40px', fontSize: '0.75rem' }} 
               onClick={() => setActiveExtra(prev => prev === 'lb' ? null : 'lb')}
-            >
-              Leg Byes
-            </button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
+            >L.Byes</button>
             <button 
               className={`btn ${activeExtra === 'wd' ? 'btn-primary' : 'btn-outline'}`} 
-              style={{ height: '56px' }} 
+              style={{ height: '40px', fontSize: '0.75rem' }} 
               onClick={() => setActiveExtra(prev => prev === 'wd' ? null : 'wd')}
             >Wide</button>
             <button 
               className={`btn ${activeExtra === 'nb' ? 'btn-primary' : 'btn-outline'}`} 
-              style={{ height: '56px' }} 
+              style={{ height: '40px', fontSize: '0.75rem' }} 
               onClick={() => setActiveExtra(prev => prev === 'nb' ? null : 'nb')}
-            >No Ball</button>
-            <button className="btn btn-danger" style={{ gridColumn: 'span 2', height: '64px', fontSize: '1.25rem', textTransform: 'uppercase', letterSpacing: '2px' }} onClick={handleWicket}>
-              Wicket
-            </button>
+            >N.Ball</button>
           </div>
+          <button className="btn btn-danger" style={{ width: '100%', height: '48px', fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '16px' }} onClick={handleWicket}>
+            Wicket
+          </button>
 
           {/* Admin Actions */}
           <div style={{ textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '24px' }}>
