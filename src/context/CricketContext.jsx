@@ -43,7 +43,12 @@ export const CricketProvider = ({ children }) => {
           .maybeSingle();
         
         if (!mErr && mData) {
-          setActiveMatch(mData.data || mData); // Handle both schemas
+          // If the data column exists and is explicitly null, it means no active match
+          if ('data' in mData && mData.data === null) {
+            setActiveMatch(null);
+          } else {
+            setActiveMatch(mData.data || mData);
+          }
         }
 
         // Fetch Settings
@@ -103,7 +108,11 @@ export const CricketProvider = ({ children }) => {
   const syncActiveMatch = async (match) => {
     setIsSyncing(true);
     try {
-      await supabase.from('active_match').upsert({ id: 'current', data: match, updated_at: new Date().toISOString() });
+      if (match === null) {
+        await supabase.from('active_match').delete().eq('id', 'current');
+      } else {
+        await supabase.from('active_match').upsert({ id: 'current', data: match, updated_at: new Date().toISOString() });
+      }
     } finally { setIsSyncing(false); }
   };
 
@@ -434,6 +443,11 @@ export const CricketProvider = ({ children }) => {
     let targetTournament;
     const updatedTournaments = tournaments.map(t => {
       if (t.id === tId) {
+        // Safeguard: Check if match already saved
+        if (t.matches && t.matches.some(m => m.id === activeMatch.id)) {
+          return t;
+        }
+
         const updatedTeams = t.teams.map(team => {
           const isTeam1 = team.id === activeMatch.team1.id;
           const isTeam2 = team.id === activeMatch.team2.id;
