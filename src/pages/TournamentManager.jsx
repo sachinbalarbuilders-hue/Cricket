@@ -57,6 +57,7 @@ const TournamentManager = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { tournaments, addTeamToTournament, addPlayer, removePlayer, startMatch, activeMatch, deleteMatch, resetTournamentStats, isLoading, isSyncing, isAuthorized, authorize } = useCricket();
+  const [deletingMatchId, setDeletingMatchId] = useState(null);
   
   const tournament = tournaments.find(t => t.id === id);
   
@@ -492,17 +493,26 @@ const TournamentManager = () => {
                       View Scorecard
                     </button>
                     {isAuthorized && (
-                      <button 
-                        className="btn btn-outline" 
-                        style={{ fontSize: '0.875rem', padding: '8px', color: 'var(--accent-danger)', borderColor: 'var(--accent-danger)', background: 'rgba(239,68,68,0.05)' }}
-                        onClick={() => {
-                          if (window.confirm('Delete this match record? This cannot be undone.')) {
-                            deleteMatch(tournament.id, match.id);
-                          }
-                        }}
-                      >
-                        <XCircle size={16} />
-                      </button>
+                      <div style={{ position: 'relative' }}>
+                        {deletingMatchId === match.id ? (
+                          <div style={{ position: 'absolute', right: 0, top: 0, background: 'var(--bg-secondary)', padding: '8px', borderRadius: '8px', border: '1px solid var(--accent-danger)', display: 'flex', gap: '8px', zIndex: 10, whiteSpace: 'nowrap', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Delete?</span>
+                            <button className="btn btn-danger" style={{ padding: '4px 8px', fontSize: '0.75rem' }} onClick={async () => {
+                              await deleteMatch(tournament.id, match.id);
+                              setDeletingMatchId(null);
+                            }}>Yes</button>
+                            <button className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.75rem' }} onClick={() => setDeletingMatchId(null)}>No</button>
+                          </div>
+                        ) : (
+                          <button 
+                            className="btn btn-outline" 
+                            style={{ fontSize: '0.875rem', padding: '8px', color: 'var(--accent-danger)', borderColor: 'var(--accent-danger)', background: 'rgba(239,68,68,0.05)' }}
+                            onClick={() => setDeletingMatchId(match.id)}
+                          >
+                            <XCircle size={16} />
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
